@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fig 9 · Tag chat</title>
+<style>
+:root{
+  --page:#e9eaea; --panel:#f6f6f5;
+  --line:#70757b;  --detail:#b9bdc2;
+  --body:#fafafa;  --deck:#ffffff; --card:#ffffff;
+  --ink:#4b4f55;
+  --glass:#FFFFFF; --scr-ink:#4b4f55; --scr-dim:#a5a9af;
+  --live:#F97316;
+  --cap:#5d6064;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--page);color:var(--ink);font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.plate{background:var(--panel);border-radius:18px;padding:22px 26px;width:min(100%,330px);
+  display:flex;flex-direction:column;gap:10px}
+.caps{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;color:var(--cap);letter-spacing:.14em}
+.caps .fig,.caps .out{text-transform:none;letter-spacing:.06em}
+.caps .name{text-transform:uppercase}
+.caps .out{color:var(--ink)}
+.caps .out b{color:var(--live);font-weight:500}
+svg#stage{display:block;width:100%;height:auto;aspect-ratio:140/180;outline:none;overflow:visible;touch-action:manipulation}
+svg#stage:focus-visible{outline:1px dashed var(--detail);outline-offset:4px;border-radius:8px}
+
+/* bare: embeddable, no chrome */
+body.bare{background:transparent;padding:0;display:block}
+body.bare .plate{background:transparent;padding:0;width:100%;height:100%;border-radius:0;gap:0}
+body.bare .caps{display:none}
+body.bare svg#stage{width:100%;height:100%;aspect-ratio:auto}
+
+/* geometry */
+.face{fill:var(--body);stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.face.top{fill:var(--deck)}
+.face.glass{fill:var(--glass)}
+.detail{fill:none;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.pl .face{stroke:var(--line);stroke-width:.8}
+.pl.u .face{fill:var(--body)} .pl.u .face.top{fill:var(--deck)}
+.pl.r .face,.pl.r .face.top{fill:var(--card)}
+.pl.c .face{fill:var(--body)} .pl.c .face.top{fill:var(--deck)}
+.keycap .face{fill:var(--body)} .keycap .face.top{fill:var(--card)}
+
+/* screen text */
+.scr text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;fill:var(--scr-ink);font-size:8px;font-weight:500}
+.scr .tag{fill:var(--glass);font-weight:500}
+.scr .ctag{fill:var(--live);font-weight:500}
+.scr .dim{fill:var(--scr-dim);font-weight:500}
+.scr .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:8px;font-weight:500}
+.scr .cm{font-size:8px}
+.pill{fill:var(--live)}
+.field{fill:var(--deck);stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke}
+.caret{fill:var(--live);animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.led{fill:var(--detail)}
+
+/* animated plates (screen-space z moves, CSS only) */
+.ub{opacity:0;transform:translateY(48px);transition:opacity 160ms ease-out,transform 440ms cubic-bezier(.3,1.25,.5,1)}
+.ub.on{opacity:1;transform:none}
+.rb,.dt,.chip{opacity:0;transform:translateY(7px);transition:opacity 160ms ease-out,transform 260ms cubic-bezier(.3,1.4,.5,1)}
+.rb.on,.dt.on,.chip.on{opacity:1;transform:none}
+.dt circle{fill:var(--scr-dim)}
+.dt.on circle{animation:dot 900ms ease-in-out infinite}
+.dt.on circle:nth-child(2){animation-delay:150ms}
+.dt.on circle:nth-child(3){animation-delay:300ms}
+@keyframes dot{0%,60%,100%{transform:translateY(0);fill:var(--scr-dim)}30%{transform:translateY(-2.4px);fill:var(--live)}}
+.chipdot{fill:var(--live)}
+
+/* press */
+.press{transition:transform 60ms ease-out}
+.press.down{transform:translateY(3px)}
+.press.down .face,.press.hov .face{stroke:var(--live)}
+.hit{fill:transparent;stroke:none;cursor:pointer}
+
+@media (prefers-reduced-motion:reduce){
+  .ub,.rb,.dt,.chip,.press{transition:none}
+  .dt.on circle,.caret{animation:none}
+}
+</style>
+</head>
+<body>
+<main class="plate">
+  <div class="caps"><span class="fig">Fig 9</span><span class="name">Tag chat</span></div>
+  <svg id="stage" viewBox="4.5 8.4 127.4 163.9" role="img" tabindex="0"
+       aria-label="Isometric chat panel. Tag Script with a question and it answers with a sourced reply. It plays itself; hover or press the @ key, or press the @ or Enter key, to play it."></svg>
+  <div class="caps"><span class="ins">Hover or press @</span><span class="out" id="readout">idle</span></div>
+</main>
+<svg width="0" height="0" style="position:absolute;visibility:hidden" aria-hidden="true"><text id="mt" x="0" y="10"></text></svg>
+<script>
+const params = new URLSearchParams(location.search);
+if (params.get('bare') === '1') document.body.classList.add('bare');
+
+/* ---- kernel ---- */
+const C = Math.cos(Math.PI/6), S = Math.sin(Math.PI/6), OX = 24.9, OY = 95.5; // framed numerically: x -12..102, y -77..66 -> 140x180
+const P = (x,y,z) => [(x-y)*C + OX, (x+y)*S - z + OY];
+const D = (x,y,z) => [(x-y)*C, (x+y)*S - z];
+const plane = (O,U,V) => { const o=P(...O), u=D(...U), v=D(...V);
+  return `matrix(${u[0]} ${u[1]} ${v[0]} ${v[1]} ${o[0]} ${o[1]})`; };
+const TOP   = (x,y,z) => plane([x,y,z],[1,0,0],[0,1,0]);
+const FRONT = (x,y,z) => plane([x,y,z],[1,0,0],[0,0,-1]);
+const SIDE  = (x,y,z) => plane([x,y,z],[0,-1,0],[0,0,-1]);
+const rect = (t,w,h,r=0,cls='face') =>
+  `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+const box = (x,y,z,w,d,h,r=0) =>
+  rect(SIDE(x+w,y+d,z+h), d,h,Math.min(r,h/4)) +
+  rect(FRONT(x,y+d,z+h), w,h,Math.min(r,h/4)) +
+  rect(TOP(x,y,z+h), w,d,r,'face top');
+
+/* ---- scene table ----
+ foot   (0,0,0)    114x14x3
+ panel  (3,3,3)    108x7x78   screen = FRONT face at y=10
+ plates on screen  protrude 3 (y 10..13)
+ mat    (28,21,0)  28x19x3 ; keycap (30.5,22.5,3) 23x13x8 */
+const PX=3, PY=3, PW=112, PD=7, PZ=3, PH=77, FY=PY+PD, TOPZ=PZ+PH;
+const GX=3, GY=4, GW=106, GH=69, PLD=3, FP=FY+PLD;
+const FULL='@Script refund policy?', TAGN=7, REPLY='30 days, full refund', SRC='policy.pdf';
+
+/* text measurement (hidden svg text) */
+const mt = document.getElementById('mt');
+const SANS = 'ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif';
+function tw(s, weight=600, fs=8.6, fam=SANS){
+  mt.setAttribute('font-size',fs); mt.setAttribute('font-weight',weight); mt.style.fontFamily=fam; mt.textContent=s;
+  return mt.getComputedTextLength();
+}
+const FS=8, CFS=8, SP=1.8;
+const tagW = tw('@Script',700,FS), restW = tw('refund policy?',600,FS);
+const UW = 3 + (tagW+3) + SP + restW + 3.6;
+const RW = 4 + tw(REPLY,600,FS) + 4;
+const CW = GW;                             // compose field width
+const MONO = 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
+const CHW = 4 + 7 + 3.5 + tw(SRC,600,8,MONO) + 4;
+
+const CHX = 0;
+const wx = gx => PX+GX+gx;
+const gzTop = gy => TOPZ-GY-gy;
+const plate = (gx,gy,w,h,cls) => `<g class="pl ${cls}">${box(wx(gx),FY,gzTop(gy)-h,w,PLD,h,3)}</g>`;
+const pface = (gx,gy) => FRONT(wx(gx),FP,gzTop(gy));
+const UY=3, UH=14, RY=21, RH=13, CY=36, CHH=10, KY=53, KH=12;
+
+function build(){
+  let s = '';
+  s += box(0,0,0,PW+6,14,3,3);                       // foot
+  s += box(PX,PY,PZ,PW,PD,PH,3);                    // panel
+  // screen face (flat glass + compose field + camera dot)
+  const cx0 = GX+4, cx1 = GX+CW-3;
+  s += `<g class="scr" transform="${FRONT(PX,FY,TOPZ)}">
+    <rect class="face glass" x="${GX}" y="${GY}" width="${GW}" height="${GH}" rx="6"/>
+    <rect class="field" x="${GX}" y="${GY+KY}" width="${CW}" height="${KH}" rx="4"/>
+    <clipPath id="cclip"><rect x="${cx0-2}" y="${GY+KY}" width="${cx1-cx0+2}" height="${KH}"/></clipPath>
+    <g clip-path="url(#cclip)"><g id="cshift">
+      <text id="cph" class="dim cm" x="${cx0+4}" y="${GY+KY+8}">Message…</text>
+      <text id="ctag" class="ctag cm" x="${cx0}" y="${GY+KY+8}"></text>
+      <text id="crest" class="cm" x="0" y="${GY+KY+8}"></text>
+      <rect id="ccaret" class="caret" x="${cx0}" y="${GY+KY+2.6}" width="1.2" height="6.8"/>
+    </g></g>
+  </g>`;
+  // user bubble (slides up from the compose bar)
+  const ux = Math.max(0, GW-UW);
+  s += `<g class="ub" id="ub">${plate(ux,UY,UW,UH,'u')}
+    <g class="scr" transform="${pface(ux,UY)}">
+      <rect class="pill" x="3" y="2.6" width="${tagW+3}" height="8.8" rx="2.4"/>
+      <text class="tag" x="4.5" y="9.5">@Script</text>
+      <text x="${3+tagW+3+SP}" y="9.5">refund policy?</text>
+    </g></g>`;
+  // typing dots
+  s += `<g class="dt" id="dt">${plate(0,RY,30,RH,'r')}
+    <g transform="${pface(0,RY)}"><circle cx="9" cy="${RH/2}" r="1.9"/><circle cx="15" cy="${RH/2}" r="1.9"/><circle cx="21" cy="${RH/2}" r="1.9"/></g></g>`;
+  // reply bubble
+  s += `<g class="rb" id="rb">${plate(0,RY,RW,RH,'r')}
+    <g class="scr" transform="${pface(0,RY)}">
+      <text id="rtxt" x="4" y="9.3"></text>
+      <rect id="rcaret" class="caret" x="4" y="2.4" width="1.2" height="8"/>
+    </g></g>`;
+  // source tag
+  s += `<g class="chip" id="chip">${plate(CHX,CY,CHW,CHH,'c')}
+    <g class="scr" transform="${pface(CHX,CY)}">
+      <path class="chipdot" d="M4 2.2 H7.6 L9 3.6 V8 H4 Z"/>
+      <text class="mono" x="12.5" y="7.6">${SRC}</text>
+    </g></g>`;
+  // mat + keycap
+  s += box(24,20,0,34,22,3,3);
+  s += `<g class="press keycap" id="key">${box(27,21.5,3,29,17,8,3)}
+    <g transform="${TOP(27,21.5,11)}" class="scr"><text x="14.5" y="12.8" text-anchor="middle" style="font-size:15px;font-weight:500;font-family:${MONO}">@</text></g></g>`;
+  s += `<g transform="${TOP(23,19,11)}"><rect class="hit" id="hit" x="0" y="0" width="36" height="24"/></g>`;
+  return s;
+}
+
+const stage = document.getElementById('stage');
+stage.innerHTML = build();
+const $ = id => document.getElementById(id);
+const ro=$('readout'), keyEl=$('key'), hit=$('hit');
+const ub=$('ub'), dt=$('dt'), rb=$('rb'), chip=$('chip');
+const cph=$('cph'), ctag=$('ctag'), crest=$('crest'), ccaret=$('ccaret'), cshift=$('cshift');
+const rtxt=$('rtxt'), rcaret=$('rcaret');
+const CX0 = GX+4, CX1 = GX+CW-3;
+
+/* ---- state ---- */
+const ZERO = {typed:0, sent:false, dots:false, reply:0, src:false, kdown:false};
+const DONE = {typed:0, sent:true,  dots:false, reply:REPLY.length, src:true, kdown:false};
+const state = {...ZERO, kheld:false, kflash:false, hov:false};
+const finished = () => state.src;
+const idle = () => !state.typed && !state.sent && !state.reply && !state.src;
+
+function setCompose(n){
+  const tag = FULL.slice(0,Math.min(n,TAGN)), rest = n>TAGN+1 ? FULL.slice(TAGN+1,n) : '';
+  const tgW = n ? tw(tag,700,CFS) : 0;
+  cph.style.display = n ? 'none' : '';
+    ctag.textContent = tag;
+  const rx = CX0 + tgW + (n>TAGN ? SP : 0);
+  crest.setAttribute('x', rx); crest.textContent = rest;
+  const cx = rest ? rx + tw(rest,600,CFS) + 1 : (n>TAGN ? rx : CX0 + tgW + 1);
+  ccaret.setAttribute('x', n ? cx : CX0);
+    cshift.setAttribute('transform', `translate(${Math.min(0, CX1 - (cx+2)).toFixed(2)} 0)`);
+}
+
+function render(){
+  const s = state;
+  setCompose(s.typed);
+  ub.classList.toggle('on', s.sent);
+  dt.classList.toggle('on', s.dots && s.reply===0);
+  rb.classList.toggle('on', s.reply>0);
+  const rt = REPLY.slice(0,s.reply);
+  rtxt.textContent = rt;
+  rcaret.setAttribute('x', 4 + (rt ? tw(rt,600,FS)+1 : 0));
+  rcaret.style.display = (s.reply>0 && s.reply<REPLY.length) ? '' : 'none';
+  chip.classList.toggle('on', s.src);
+  keyEl.classList.toggle('down', s.kdown || s.kheld || s.kflash);
+  keyEl.classList.toggle('hov', s.hov);
+  let r;
+  if (s.src) r = `answered · <b>${SRC}</b>`;
+  else if (s.sent || s.reply) r = 'tagged · answering';
+  else if (s.typed) r = 'tagging';
+  else r = 'idle';
+  if (ro.innerHTML !== r) ro.innerHTML = r;
+}
+function setState(o){ Object.assign(state, o); render(); }
+
+/* ---- timelines (pure functions of elapsed ms) ---- */
+const AUTO_LEN = 10500;
+function seqAuto(t){
+  const s = {...ZERO};
+  if (t>=9800) return s;
+  if (t>=600 && t<780) s.kdown = true;
+  if (t>=780 && t<3000) s.typed = Math.min(FULL.length, 1+Math.floor((t-780)/88));
+  if (t>=3000) s.sent = true;
+  if (t>=3500 && t<5000) s.dots = true;
+  if (t>=5000) s.reply = Math.min(REPLY.length, 1+Math.floor((t-5000)/100));
+  if (t>=7300) s.src = true;
+  return s;
+}
+const MAN_LEN = 2800;
+function seqManual(t){
+  const s = {...ZERO};
+  if (t<150) s.kdown = true;
+  if (t<740) s.typed = Math.min(FULL.length, 1+Math.floor(t/32));
+  if (t>=780) s.sent = true;
+  if (t>=980 && t<1700) s.dots = true;
+  if (t>=1700) s.reply = Math.min(REPLY.length, 1+Math.floor((t-1700)/45));
+  if (t>=2650) s.src = true;
+  return s;
+}
+
+/* ---- player ---- */
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const autoOn = params.get('autoplay') !== '0' && !reduced;
+let play = null, raf = 0, last = 0, visible = true, inside = false, resumeT = 0;
+const active = () => visible && !document.hidden;
+let lastKey = '';
+function frame(ts){
+  raf = 0;
+  if (!play || !active()){ last = 0; return; }
+  const dt_ = last ? Math.min(ts-last, 100) : 16; last = ts;
+  play.t += dt_;
+  if (play.t >= play.len){
+    if (play.loop) play.t -= play.len;
+    else { setState({...DONE, kdown:false}); play = null; return; }
+  }
+  const s = play.fn(play.t), k = JSON.stringify(s);
+  if (k !== lastKey){ lastKey = k; setState(s); }
+  raf = requestAnimationFrame(frame);
+}
+function kick(){ if (!raf && play && active()){ last = 0; raf = requestAnimationFrame(frame); } }
+function startAuto(){ lastKey=''; setState({...ZERO}); play = {kind:'auto', t:0, len:AUTO_LEN, fn:seqAuto, loop:true}; kick(); }
+function startManual(){
+  if (reduced){ play = null; setState({...DONE}); return; }
+  lastKey=''; play = {kind:'manual', t:0, len:MAN_LEN, fn:seqManual, loop:false}; setState({...seqManual(0)}); kick();
+}
+
+/* ---- interaction ---- */
+function armResume(){
+  clearTimeout(resumeT);
+  if (!autoOn || inside) return;
+  resumeT = setTimeout(()=>{
+    if (inside) return;
+    if (play) { armResume(); return; }
+    startAuto();
+  }, 4000);
+}
+function interact(){
+  clearTimeout(resumeT);
+  if (play && play.kind==='auto'){ play = null; if (!finished()) setState({...ZERO}); else setState({kdown:false}); }
+  armResume();
+}
+function pressKey(){
+  interact();
+  state.kflash = true; render(); setTimeout(()=>{ state.kflash=false; render(); }, 110);
+  startManual();
+}
+stage.addEventListener('pointerenter', ()=>{ inside = true; interact(); });
+stage.addEventListener('pointermove',  ()=>{ inside = true; interact(); });
+stage.addEventListener('pointerdown',  ()=>{ inside = true; interact(); });
+stage.addEventListener('pointerleave', ()=>{ inside = false; if (state.hov) setState({hov:false}); armResume(); });
+hit.addEventListener('pointerenter', ()=>{ inside = true; interact(); setState({hov:true}); if (idle() && !play) startManual(); });
+hit.addEventListener('pointerleave', ()=>{ setState({hov:false, kheld:false}); });
+hit.addEventListener('pointerdown', e=>{ e.preventDefault(); interact(); state.kheld = true; render(); startManual(); });
+window.addEventListener('pointerup', ()=>{ if (state.kheld) setState({kheld:false}); });
+window.addEventListener('keydown', e=>{
+  if (e.metaKey||e.ctrlKey||e.altKey||e.repeat) return;
+  if (e.key==='@' || e.key==='Enter'){ pressKey(); e.preventDefault(); }
+  else if (e.key==='Escape'){ interact(); play=null; setState({...ZERO}); }
+});
+window.addEventListener('blur', ()=>{ setState({hov:false, kheld:false}); });
+document.addEventListener('visibilitychange', kick);
+if ('IntersectionObserver' in window){
+  new IntersectionObserver(es=>{ visible = es[es.length-1].isIntersecting; kick(); }).observe(stage);
+}
+
+window.__state = state; window.__play = () => play;
+if (reduced) setState({...DONE});
+else { render(); if (autoOn) startAuto(); }
+</script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fig 8 · Upload intake</title>
+<style>
+:root{
+  --page:#e9eaea; --panel:#f6f6f5;
+  --line:#70757b;  --detail:#b9bdc2;
+  --body:#fafafa;  --deck:#ffffff; --card:#ffffff;
+  --ink:#4b4f55;
+  --glass:#FFFFFF; --scr-ink:#4b4f55; --scr-dim:#a5a9af;
+  --live:#F97316;
+  --cap:#5d6064;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--page);color:var(--ink);font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.plate{background:var(--panel);border-radius:18px;padding:22px 26px;width:min(100%,330px);
+  display:flex;flex-direction:column;gap:10px}
+.caps{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;color:var(--cap);letter-spacing:.14em}
+.caps .fig,.caps .out{text-transform:none;letter-spacing:.06em}
+.caps .name{text-transform:uppercase}
+.caps .out{color:var(--ink)}
+.caps .out b{color:var(--live);font-weight:500}
+svg#stage{display:block;width:100%;height:auto;aspect-ratio:140/245;outline:none;overflow:visible;touch-action:manipulation}
+svg#stage:focus-visible{outline:1px dashed var(--detail);outline-offset:4px;border-radius:8px}
+
+/* bare: embeddable, no chrome */
+body.bare{background:transparent;padding:0;display:block}
+body.bare .plate{background:transparent;padding:0;width:100%;height:100%;border-radius:0;gap:0}
+body.bare .caps{display:none}
+body.bare svg#stage{width:100%;height:100%;aspect-ratio:auto}
+
+/* geometry */
+.face{fill:var(--body);stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.face.top{fill:var(--deck)}
+.face.glass{fill:var(--glass)}
+.detail{fill:none;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.well{fill:var(--detail);fill-opacity:.34;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.cardbody .face,.cardbody .face.top{fill:var(--card)}
+.led{fill:var(--card);stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke}
+.led.on{fill:var(--live);stroke:var(--live)}
+
+/* printed labels (on faces) */
+.lbl{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;fill:var(--ink);pointer-events:none}
+.lbl.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;font-weight:500}
+
+/* screen */
+.scr text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;fill:var(--scr-ink)}
+.scr-c{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:500;letter-spacing:.02em;fill:var(--scr-ink)}
+.scr-c.dim{fill:var(--scr-dim)}
+.scr .dim{fill:var(--scr-dim)}
+.scr .stat{font-weight:500}
+.scr .stat.run{fill:var(--live)}
+.scr .stat.idle{fill:var(--scr-dim);font-weight:500}
+.scr .track{fill:var(--body)}
+.scr .fillbar{fill:var(--live);transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0)}
+.scr .fillbar.run{animation:fillbar var(--idx,1000ms) linear forwards}
+.scr .fillbar.done{transform:scaleX(1);fill:var(--scr-ink)}
+@keyframes fillbar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.caret{fill:var(--live);animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* pressable parts */
+.press{cursor:pointer;transition:transform 60ms ease-out}
+.press:hover{transform:translateY(-2px)}
+.press.down,.press.down:hover{transform:translateY(4px)}
+.press:hover .face{stroke:var(--live)}
+.press.down .face{stroke:var(--live)}
+
+/* sheets: slide in via translateY on .sheet, clipped by the slot plane */
+.sheet{transition:transform 380ms cubic-bezier(.45,.05,.55,1)}
+.sheet.in{transition:transform 420ms cubic-bezier(.55,0,.85,.45);pointer-events:none}
+.sheet .face{fill:var(--card)}
+.sheet .fold{fill:var(--body);stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+
+/* plug (+cable) travels in x: translate on screen */
+.plug{transition:transform 200ms cubic-bezier(.3,1.4,.5,1)}
+.plug .press.down,.plug .press.down:hover{transform:translate(-3px,-1.5px)}
+.plug .press:hover{transform:translate(-2px,-1px)}
+.cable{fill:none;stroke:var(--line);stroke-width:2.2;stroke-linecap:round;pointer-events:none}
+.cable.in{stroke:var(--card);stroke-width:1.8}
+
+/* sheet that comes through the side socket */
+.dcard{opacity:0;transition:transform 520ms cubic-bezier(.45,.05,.55,1),opacity 160ms ease-out;pointer-events:none}
+.dcard.show{opacity:1}
+
+@media (prefers-reduced-motion:reduce){
+  .sheet,.sheet.in,.plug,.dcard,.press{transition:none}
+  .caret{animation:none}
+  .scr .fillbar.run{animation:none;transform:scaleX(1)}
+}
+</style>
+</head>
+<body>
+<main class="plate">
+  <div class="caps"><span class="fig">Fig 8</span><span class="name">Upload intake</span></div>
+  <svg id="stage" viewBox="13.8 11.2 127.0 222.3" role="img" tabindex="0"
+       aria-label="Isometric intake unit with a wide slot on top. Three sheets named q2-plan.pdf, brief.docx and notes.md wait above it; a front screen shows indexing then searchable. A plug labelled drive connects to a side socket and sends a fourth sheet in. Press a sheet or keys 1, 2, 3 to upload it, press the plug or key 4 to connect the drive, Escape to reset."></svg>
+  <div class="caps"><span class="ins">Press 1 · 2 · 3 · plug 4</span><span class="out" id="readout">idle · 3 files</span></div>
+</main>
+<script>
+const params = new URLSearchParams(location.search);
+if (params.get('bare') === '1') document.body.classList.add('bare');
+
+/* ---- kernel ---- */
+const C = Math.cos(Math.PI/6), S = Math.sin(Math.PI/6), OX = 50, OY = 148;
+const P = (x,y,z) => [(x-y)*C + OX, (x+y)*S - z + OY];
+const D = (x,y,z) => [(x-y)*C, (x+y)*S - z];
+const plane = (O,U,V) => { const o=P(...O), u=D(...U), v=D(...V);
+  return `matrix(${u[0]} ${u[1]} ${v[0]} ${v[1]} ${o[0]} ${o[1]})`; };
+const TOP   = (x,y,z) => plane([x,y,z],[1,0,0],[0,1,0]);
+const FRONT = (x,y,z) => plane([x,y,z],[1,0,0],[0,0,-1]);
+const SIDE  = (x,y,z) => plane([x,y,z],[0,-1,0],[0,0,-1]);
+const rect = (t,w,h,r=0,cls='face') =>
+  `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+const box = (x,y,z,w,d,h,r=0) =>
+  rect(SIDE(x+w,y+d,z+h), d,h,Math.min(r,h/4)) +
+  rect(FRONT(x,y+d,z+h), w,h,Math.min(r,h/4)) +
+  rect(TOP(x,y,z+h), w,d,r,'face top');
+const pts = a => a.map(p=>p.map(n=>n.toFixed(2)).join(',')).join(' ');
+
+/* ---- scene table ----
+ body    (0,0,0)    64x36x84    front = screen, side (x=64) = sockets
+ collar  (2,3,84)   60x31x5     top: slot x5..59 y9..15, label "upload"
+ sheets  plane y=12 x5..59 54x15, resting z = 93 + 18*rank
+ plug    (64,12,16) 26x12x12    strain relief + cable behind it
+ dcard   plane y=18 x66..96 30x14 z36..50, enters side slit at x=64 */
+const BW=66, BD=36, BH=78, CZ=BH+5;
+const SY=14, SX=4, SW=58, SH=15, SZ0=CZ+4, PITCH=18;
+const FILES = ['q2-plan.pdf','brief.docx','notes.md'];
+const DFILE = 'ops.pdf';
+const PX=BW, PY=12, PZ=16, PW=30, PD=12, PH=12;
+const OUT = 10;                       // plug travel in x when unplugged
+const DY=18, DX0=BW+2, DW=34, DZ=36, DH=14;
+const IDX = 1000;                     // ms of "indexing…"
+
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+function build(){
+  let s = '';
+  // clip: everything above the top plane z=CZ at the slot plane y=SY (sheets), and x>=64 on plane y=DY (card)
+  s += `<defs>
+    <clipPath id="clipSlot"><polygon points="${pts([P(0,SY,CZ),P(BW,SY,CZ),P(BW,SY,CZ+260),P(0,SY,CZ+260)])}"/></clipPath>
+    <clipPath id="clipSide"><polygon points="${pts([P(BW,DY,0),P(BW+120,DY,0),P(BW+120,DY,120),P(BW,DY,120)])}"/></clipPath>
+  </defs>`;
+
+  // body + collar
+  s += box(0,0,0,BW,BD,BH,5);
+  s += box(2,3,BH,BW-4,BD-5,5,2);
+
+  // front: screen + vents
+  s += `<g transform="${FRONT(0,BD,BH)}">
+    <rect class="face glass" x="4" y="8" width="58" height="42" rx="3"/>
+    <g class="scr">
+      <text id="sName" x="9" y="22" font-size="8"></text>
+      <text id="sStat" x="9" y="34" font-size="8.4" class="stat"></text>
+      <rect class="track" x="9" y="39" width="48" height="3.4" rx="1.7"/>
+      <rect class="fillbar" id="sBar" x="9" y="39" width="48" height="3.4" rx="1.7"/>
+    </g>
+    <rect class="face glass" x="4" y="56" width="58" height="14" rx="2.5"/>
+    <text class="scr-c" id="sCnt" x="9" y="66.4" font-size="8"></text>
+    <path class="detail" d="M10 75 H56"/>
+  </g>`;
+
+  // side: sync slit, socket, led, vents
+  s += `<g transform="${SIDE(BW,BD,BH)}">
+    <rect class="well" x="${BD-DY-1.6}" y="${BH-DZ-DH-4}" width="3.2" height="${DH+8}" rx="1.4"/>
+    <rect class="well" x="${BD-PY-PD-1.5}" y="${BH-PZ-PH-1.5}" width="${PD+3}" height="${PH+3}" rx="2.5"/>
+    <circle class="led" id="led" cx="${BD-7}" cy="26" r="2.2"/>
+    <path class="detail" d="M8 10 H28 M8 16 H28"/>
+  </g>`;
+
+  // top: slot + label
+  s += `<g transform="${TOP(2,3,CZ)}">
+    <rect class="well" x="${SX-3}" y="${SY-5-3}" width="${SW+2}" height="10" rx="2"/>
+    <text class="lbl mono" x="${SX-1}" y="27.5" font-size="8">upload</text>
+  </g>`;
+
+  // sheets (one clip group each so the clip stays fixed while .sheet moves)
+  FILES.forEach((f,i)=>{
+    const z = SZ0 + PITCH*i;
+    s += `<g clip-path="url(#clipSlot)"><g class="sheet" data-i="${i}"><g class="press" data-i="${i}">
+      <g transform="${FRONT(SX,SY,z+SH)}">
+        <rect class="face" width="${SW}" height="${SH}" rx="1.6"/>
+        <path class="fold" d="M${SW-6} 0 V6 H${SW} Z"/>
+        <text class="lbl" x="4.5" y="10.6" font-size="8">${esc(f)}</text>
+      </g></g></g></g>`;
+  });
+
+  // drive card entering the side slit
+  s += `<g clip-path="url(#clipSide)"><g class="dcard" id="dcard"><g transform="${FRONT(DX0,DY,DZ+DH)}">
+      <rect class="face" width="${DW}" height="${DH}" rx="1.6" style="fill:var(--card)"/>
+      <path class="fold" d="M${DW-5} 0 V5 H${DW} Z"/>
+      <text class="lbl" x="3.6" y="10" font-size="8">${DFILE}</text>
+    </g></g></g>`;
+
+  // plug + cable (moves as one in x)
+  const ex = PX+PW+3, ey = PY+PD+12;
+  const c0 = P(PX+PW+7,PY+PD/2,PZ+PH/2), c1 = P(PX+PW+14,PY+PD/2,PZ+PH/2), c2 = P(ex+8,ey-4,PZ-6), c3 = P(ex,ey,5);
+  const cd = `M${c0.join(' ')} C${c1.join(' ')} ${c2.join(' ')} ${c3.join(' ')}`;
+  s += `<g class="plug" id="plug"><g class="press" id="plugpress">
+      ${box(PX+PW,PY+2,PZ+2,7,PD-4,PH-4,1.5)}
+      ${box(PX,PY,PZ,PW,PD,PH,2.5)}
+      <g transform="${FRONT(PX,PY+PD,PZ+PH)}"><text class="lbl mono" x="3.4" y="9.3" font-size="8">drive</text></g>
+    </g>
+    ${box(ex-6,ey-4,0,12,8,5,2)}
+    <path class="cable" d="${cd}"/><path class="cable in" d="${cd}"/></g>`;
+  return s;
+}
+
+const stage = document.getElementById('stage');
+stage.innerHTML = build();
+const ro = document.getElementById('readout');
+const sheets = [...stage.querySelectorAll('.sheet')];
+const presses = [...stage.querySelectorAll('.sheet .press')];
+const plug = document.getElementById('plug'), plugPress = document.getElementById('plugpress');
+const dcard = document.getElementById('dcard'), led = document.getElementById('led');
+const sCnt = document.getElementById('sCnt');
+const sName = document.getElementById('sName'), sStat = document.getElementById('sStat'), sBar = document.getElementById('sBar');
+
+/* ---- state ---- */
+const fresh = () => ({ sent:[false,false,false], cur:null, phase:'idle', plug:false, card:'hidden', done:0 });
+let state = fresh();
+let timers = [];
+const later = (fn,ms) => { const id = setTimeout(fn,ms); timers.push(id); return id; };
+let lastPhase = 'idle', lastCur = null;
+
+function render(){
+  // sheets: waiting ones queue up by rank, sent ones slide below the slot
+  let rank = 0;
+  sheets.forEach((el,i)=>{
+    let dy;
+    if (state.sent[i]) dy = PITCH*i + SZ0 + SH - CZ + 2;      // fully below the top plane
+    else { dy = PITCH*(i-rank); rank++; }
+    el.style.transform = `translateY(${dy}px)`;
+    el.classList.toggle('in', state.sent[i]);
+  });
+  plug.style.transform = state.plug ? 'translate(0,0)' : `translate(${OUT*C}px,${OUT*S}px)`;
+  led.classList.toggle('on', state.plug);
+  // drive card
+  const sh = state.card === 'shown', inn = state.card === 'in';
+  dcard.classList.toggle('show', sh || inn);
+  dcard.style.transform = inn ? `translate(${-(DW+8)*C}px,${-(DW+8)*S}px)`
+                              : state.card === 'shown' ? 'translate(0,0)' : `translate(${14*C}px,${14*S}px)`;
+  // screen
+  const waiting = state.sent.filter(x=>!x).length;
+  if (state.phase === 'idle') {
+    sName.textContent = state.plug ? 'drive linked' : `${waiting} waiting`;
+    sName.setAttribute('class','dim');
+    sStat.textContent = 'ready'; sStat.setAttribute('class','stat idle');
+    sBar.setAttribute('class','fillbar');
+  } else {
+    sName.textContent = state.cur; sName.removeAttribute('class');
+    if (state.phase === 'indexing') {
+      sStat.textContent = 'indexing…'; sStat.setAttribute('class','stat run');
+      if (lastPhase !== 'indexing' || lastCur !== state.cur) {
+        sBar.setAttribute('class','fillbar'); void sBar.getBoundingClientRect();
+        sBar.style.setProperty('--idx', IDX+'ms'); sBar.setAttribute('class','fillbar run');
+      }
+    } else {
+      sStat.textContent = 'searchable'; sStat.setAttribute('class','stat');
+      sBar.setAttribute('class','fillbar done');
+    }
+  }
+  sCnt.textContent = `${state.done} indexed`; sCnt.setAttribute('class', state.done ? 'scr-c' : 'scr-c dim');
+  lastPhase = state.phase; lastCur = state.cur;
+  // readout
+  if (state.phase === 'idle') ro.innerHTML = state.plug ? 'drive · <b>linked</b>' : `idle · ${waiting} file${waiting===1?'':'s'}`;
+  else ro.innerHTML = `${state.cur} · ` + (state.phase === 'indexing' ? '<b>indexing</b>' : 'indexed');
+}
+
+function flash(el){ el.classList.add('down'); setTimeout(()=>el.classList.remove('down'),110); }
+
+function ingest(name){
+  state.cur = name; state.phase = 'indexing'; render();
+  const mine = name;
+  later(()=>{ if (state.cur === mine && state.phase === 'indexing'){ state.phase = 'done'; state.done++; render(); } }, IDX);
+}
+function sendSheet(i){
+  if (state.sent[i]) return false;
+  flash(presses[i]);
+  later(()=>{ state.sent[i] = true; ingest(FILES[i]); }, 70);
+  return true;
+}
+function plugIn(){
+  flash(plugPress);
+  if (state.plug) { state.plug = false; state.card = 'hidden'; render(); return; }
+  state.plug = true; state.phase = state.phase; render();
+  if (state.phase === 'idle') render();
+  later(()=>{ state.card = 'shown'; render(); }, 260);
+  later(()=>{ state.card = 'in'; render(); }, 640);
+  later(()=>{ ingest(DFILE); }, 1100);
+}
+function reset(){
+  timers.forEach(clearTimeout); timers = [];
+  state = fresh(); render();
+}
+
+/* ---- pointer / keyboard ---- */
+presses.forEach((p,i)=>p.addEventListener('click', e=>{ e.stopPropagation(); sendSheet(i); }));
+plugPress.addEventListener('click', e=>{ e.stopPropagation(); plugIn(); });
+stage.addEventListener('click', e=>{ if (!e.target.closest('.press')) reset(); });
+window.addEventListener('keydown', e=>{
+  if (e.metaKey||e.ctrlKey||e.altKey) return;
+  if (e.key==='1'||e.key==='2'||e.key==='3'){ sendSheet(+e.key-1); e.preventDefault(); }
+  else if (e.key==='4'||e.key==='d'){ plugIn(); e.preventDefault(); }
+  else if (e.key==='0'||e.key==='Escape'||e.key==='r'){ reset(); e.preventDefault(); }
+});
+
+/* ---- autoplay: same functions, scheduled; user input takes over ---- */
+const reduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const autoOK = params.get('autoplay') !== '0' && !reduced;
+let ap = { running:false, ids:[] }, visible = true, userActive = false, inside = false, resumeId = 0;
+const apLater = (fn,ms) => { ap.ids.push(setTimeout(fn,ms)); };
+function apCycle(){
+  reset();
+  apLater(()=>sendSheet(0), 700);
+  apLater(()=>sendSheet(1), 2500);
+  apLater(()=>sendSheet(2), 4300);
+  apLater(()=>plugIn(),     6200);
+  apLater(apCycle,         10600);
+}
+function apStart(){ if (ap.running) return; ap.running = true; apCycle(); }
+function apStop(toRest){
+  ap.ids.forEach(clearTimeout); ap.ids = []; const was = ap.running; ap.running = false;
+  if (was && toRest) reset();
+}
+function syncAuto(){
+  const want = autoOK && visible && !document.hidden && !userActive;
+  if (want) apStart(); else apStop(false);
+}
+function touched(){
+  clearTimeout(resumeId);
+  if (!userActive || ap.running) { userActive = true; apStop(true); }
+  scheduleResume();
+}
+function scheduleResume(){
+  clearTimeout(resumeId);
+  if (inside) return;
+  resumeId = setTimeout(()=>{ userActive = false; reset(); syncAuto(); }, 4000);
+}
+stage.addEventListener('pointerenter', ()=>{ inside = true; touched(); });
+stage.addEventListener('pointermove',  ()=>{ inside = true; touched(); });
+stage.addEventListener('pointerdown',  ()=>{ inside = true; touched(); });
+stage.addEventListener('pointerleave', ()=>{ inside = false; if (userActive) scheduleResume(); });
+window.addEventListener('keydown', ()=>{ touched(); }, true);
+document.addEventListener('visibilitychange', syncAuto);
+if ('IntersectionObserver' in window) new IntersectionObserver(es=>{ visible = es[es.length-1].isIntersecting; syncAuto(); }).observe(stage);
+
+render();
+syncAuto();
+window.__state = ()=>state;
+</script>
+</body>
+</html>

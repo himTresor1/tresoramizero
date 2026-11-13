@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fig 11 · System rack</title>
+<style>
+:root{
+  --page:#e9eaea; --panel:#f6f6f5;
+  --line:#70757b;  --detail:#b9bdc2;
+  --body:#fafafa;  --deck:#ffffff; --card:#ffffff;
+  --ink:#4b4f55;
+  --glass:#FFFFFF; --scr-ink:#4b4f55; --scr-dim:#a5a9af;
+  --live:#F97316;
+  --cap:#5d6064;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--page);color:var(--ink);font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.plate{background:var(--panel);border-radius:18px;padding:22px 26px;width:min(100%,480px);
+  display:flex;flex-direction:column;gap:10px}
+.caps{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;color:var(--cap);letter-spacing:.14em}
+.caps .fig,.caps .out{text-transform:none;letter-spacing:.06em}
+.caps .name{text-transform:uppercase}
+.caps .out{color:var(--ink)}
+.caps .out b{color:var(--live);font-weight:500}
+svg#stage{display:block;width:100%;height:auto;aspect-ratio:292/140;outline:none;overflow:visible;touch-action:manipulation}
+svg#stage:focus-visible{outline:1px dashed var(--detail);outline-offset:4px;border-radius:8px}
+
+/* bare: embeddable, no chrome */
+body.bare{background:transparent;padding:0;display:block}
+body.bare .plate{background:transparent;padding:0;width:100%;height:100%;border-radius:0;gap:0}
+body.bare .caps{display:none}
+body.bare svg#stage{width:100%;height:100%;aspect-ratio:auto}
+
+/* geometry */
+.face{fill:var(--body);stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.face.top{fill:var(--deck)}
+.face.card{fill:var(--card)}
+.face.slot{fill:#f0f0ee}
+.detail{fill:none;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.thin{fill:none;stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.cardbody .face,.cardbody .face.top{fill:var(--card)}
+
+/* labels */
+.lbl{font:500 10.2px ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;fill:var(--ink);pointer-events:none}
+.plt{font:500 9px ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;fill:var(--scr-ink);text-anchor:middle;pointer-events:none}
+.ttl{font:500 9.6px ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;fill:var(--scr-ink);pointer-events:none}
+.led{fill:#f0f0ee;stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
+.dr.scan .led,.dr.ok .led{fill:var(--live);stroke:var(--live)}
+
+/* drawers */
+.pan{transition:transform 150ms cubic-bezier(.3,1.4,.5,1)}
+.dr,.dr *{pointer-events:none}
+.hit{fill:transparent;stroke:none;cursor:pointer}
+.dr .ext{opacity:0;transition:opacity 120ms}
+.dr.open .ext{opacity:1}
+.dr.open .pan{transform:translate(-3.03px,1.75px)}
+.dr.down .pan{transform:translate(-3.03px,3.75px);transition-duration:60ms}
+.dr.scan .pan .face,.dr.down .pan .face{stroke:var(--live)}
+.band{transform:translateX(-20px);opacity:0}
+.band .tr{fill:var(--live);opacity:.22}
+.band .hd{fill:var(--live)}
+.dr.scan .band{animation:sweep 1.05s cubic-bezier(.45,0,.55,1) both}
+@keyframes sweep{
+  0%{transform:translateX(-20px);opacity:1}
+  92%{opacity:1}
+  100%{transform:translateX(74px);opacity:0}
+}
+
+/* switch plate */
+.knob{fill:var(--detail)}
+
+/* report slip */
+.slipin{transform:translateX(-98px);transition:transform 1.25s cubic-bezier(.25,.65,.3,1)}
+.slip.out .slipin{transform:translateX(-4px)}
+body.fast .slipin{transition-duration:.45s}
+.slipface{fill:var(--card);stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.bar{fill:#f0f0ee;stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;
+  transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);
+  transition:transform .55s cubic-bezier(.3,1.25,.5,1)}
+.bar.hot{fill:var(--live);stroke:var(--live)}
+.slip.grow .bar{transform:scaleY(var(--s))}
+body.fast .bar{transition-duration:.35s}
+
+@media (prefers-reduced-motion:reduce){
+  .pan,.dr .ext,.slipin,.bar{transition:none !important}
+  .dr.scan .band{animation:none !important}
+}
+</style>
+</head>
+<body>
+<main class="plate">
+  <div class="caps"><span class="fig">Fig 11</span><span class="name">System rack</span></div>
+  <svg id="stage" viewBox="12.1 8.1 267.8 128.4" role="img" tabindex="0"
+       aria-label="Isometric in-house system rack with three drawers labelled orders, crm and finance and a read only plate. A light scans each drawer, then a report slip prints out with a small bar chart. Hover or press a drawer, or press keys 1, 2 or 3, to print that system's summary."></svg>
+  <div class="caps"><span class="ins">Hover or press 1 · 2 · 3</span><span class="out" id="readout">read only · idle</span></div>
+</main>
+<script>
+const params = new URLSearchParams(location.search);
+if (params.get('bare') === '1') document.body.classList.add('bare');
+
+/* ---- kernel ---- */
+const C = Math.cos(Math.PI/6), S = Math.sin(Math.PI/6);
+let OX = 0, OY = 0;
+const P = (x,y,z) => [(x-y)*C + OX, (x+y)*S - z + OY];
+const D = (x,y,z) => [(x-y)*C, (x+y)*S - z];
+const plane = (O,U,V) => { const o=P(...O), u=D(...U), v=D(...V);
+  return `matrix(${u[0]} ${u[1]} ${v[0]} ${v[1]} ${o[0]} ${o[1]})`; };
+const TOP   = (x,y,z) => plane([x,y,z],[1,0,0],[0,1,0]);
+const FRONT = (x,y,z) => plane([x,y,z],[1,0,0],[0,0,-1]);
+const SIDE  = (x,y,z) => plane([x,y,z],[0,-1,0],[0,0,-1]);
+const rect = (t,w,h,r=0,cls='face') =>
+  `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+const box = (x,y,z,w,d,h,r=0,cls='') =>
+  rect(SIDE(x+w,y+d,z+h), d,h,Math.min(r,h/4),'face '+cls) +
+  rect(FRONT(x,y+d,z+h), w,h,Math.min(r,h/4),'face '+cls) +
+  rect(TOP(x,y,z+h), w,d,r,'face top '+cls);
+
+/* ---- scene table ----
+ plinth  (-4,-4,0)  W+8 x D+8 x 3
+ body    (0,0,3)    72 x 36 x 50   (top z=53)
+ drawers z = 7.5 / 21.5 / 35.5 (finance, crm, orders) 12.5 high, front plane y=D+3
+ slot    side face x=W, y=6, z 16..50 ; plate on the front part of that face
+ slip    plane y=6, x from W outward, 92 x 31.5, z 17..48.5 */
+const W=72, DP=36, BZ=3, H=50, TZ=BZ+H;
+const PW=W-6, PH=12, PZ=[36.5,22,7.5];
+const NAMES=['orders','crm','finance'];
+const TITLES=['orders summary','crm summary','finance summary'];
+const DATA=[[.45,.6,.55,.8,.7,1],[.7,.5,.8,.55,.9,.75],[.35,.5,.65,.6,.85,.95]]; // per system
+const Q3=[.4,.62,.5,.82,.72,1];
+const YS=6, SW=94, SH=31.5, SZT=48.5;
+const BARS=6, BX0=7, BPITCH=8.6, BW=5.4, BASE=SH-4.5, BMAX=10.5;
+
+/* frame the scene numerically: project extreme corners, centre in 292x140 */
+(function fit(){
+  const pts=[[-4,-4,0],[W+4,-4,0],[W+4,DP+4,0],[-4,DP+4,0],[-4,-4,TZ],[W+4,-4,TZ],[-4,DP+4,TZ],
+    [W+4,DP+4,TZ],[W,YS,SZT],[W+SW-4,YS,SZT],[W+SW-4,YS,SZT-SH],[W,YS,SZT-SH],[W-4,DP+8,0]];
+  const xs=pts.map(p=>P(...p)[0]), ys=pts.map(p=>P(...p)[1]);
+  OX = 146 - (Math.min(...xs)+Math.max(...xs))/2;
+  OY = 70  - (Math.min(...ys)+Math.max(...ys))/2;
+})();
+
+function drawer(i){
+  const z = PZ[i], fy = DP+3;
+  const label = `<text class="lbl" x="7" y="${PH*0.5+3.7}">${NAMES[i]}</text>
+    <circle class="led" cx="${PW-8}" cy="${PH/2}" r="2.3"/>`;
+  return `<g class="dr" data-i="${i}">
+    <g class="ext cardbody">${box(3,DP,z,PW,3.5,PH-1,1)}</g>
+    <g class="pan"><g class="cardbody">${box(3,DP,z,PW,3,PH,1.5)}</g>
+      <g transform="${FRONT(3,fy,z+PH)}">
+        ${label}
+        <g clip-path="url(#pclip)"><g class="band"><rect class="tr" x="-14" y="0" width="14" height="${PH}"/><rect class="hd" x="-2.5" y="0" width="2.5" height="${PH}"/></g></g>
+      </g>
+    </g></g>`;
+}
+
+function slip(){
+  let bars='';
+  for(let i=0;i<BARS;i++) bars += `<rect class="bar${i===BARS-1?' hot':''}" x="${BX0+i*BPITCH}" y="${BASE-BMAX}" width="${BW}" height="${BMAX}" style="transition-delay:${i*65}ms"/>`;
+  const gx = BX0+BARS*BPITCH+6;
+  return `<g class="slip" transform="${FRONT(W,YS,SZT)}">
+    <g clip-path="url(#sclip)"><g class="slipin">
+      <rect class="slipface" x="0" y="0" width="${SW}" height="${SH}" rx="1.5"/>
+      <text class="ttl" id="ttl" x="8" y="11.6">Q3 summary</text>
+      <path class="detail" d="M8 15.5 H${SW-9}"/>
+      <path class="detail" d="M${BX0-2} ${BASE+.5} H${BX0+BARS*BPITCH-2}"/>
+      ${bars}
+      <path class="detail" d="M${gx} ${BASE-9} H${SW-9} M${gx} ${BASE-4.5} H${SW-22} M${gx} ${BASE} H${SW-9}"/>
+    </g></g>
+  </g>`;
+}
+
+function build(){
+  let s = `<defs>
+    <clipPath id="pclip" clipPathUnits="userSpaceOnUse"><rect x="0" y="0" width="${PW}" height="${PH}" rx="1.5"/></clipPath>
+    <clipPath id="sclip" clipPathUnits="userSpaceOnUse"><rect x="0" y="-2" width="${SW+4}" height="${SH+4}"/></clipPath>
+  </defs>`;
+  s += box(-4,-4,0,W+8,DP+8,BZ,3);                 // plinth
+  s += box(0,0,BZ,W,DP,H,4);                       // rack body
+  // top vents
+  s += `<g transform="${TOP(0,0,TZ)}">
+    <path class="detail" d="M8 7 H${W-8} M8 11.5 H${W-8} M8 16 H${W-8}"/>
+    <rect class="detail" x="8" y="24" width="14" height="5" rx="2"/>
+  </g>`;
+  // side face: paper slot + read-only plate
+  s += `<g transform="${SIDE(W,DP,TZ)}">
+    <rect class="face slot" x="${DP-YS-2}" y="${TZ-(SZT+1.5)}" width="4" height="${SH+3}" rx="1.5"/>
+    <rect class="face card" x="3" y="6" width="23" height="37" rx="3"/>
+    <text class="plt" x="14.5" y="18.5">read</text>
+    <text class="plt" x="14.5" y="28.5">only</text>
+    <rect class="detail" x="7" y="33.5" width="15" height="6" rx="3"/>
+    <circle class="knob" cx="10" cy="36.5" r="2.2"/>
+  </g>`;
+  s += slip();
+  [2,1,0].forEach(i=>{ s += drawer(i); });
+  // fixed hit areas (closed footprint) so an opening drawer never flickers under the pointer
+  [0,1,2].forEach(i=>{ s += `<g transform="${FRONT(3,DP+3,PZ[i]+PH+.75)}"><rect class="hit" data-i="${i}" width="${PW}" height="${PH+1.5}"/></g>`; });
+  // hairline gaps already come from faces
+  return s;
+}
+
+const stage = document.getElementById('stage');
+stage.innerHTML = build();
+const ro = document.getElementById('readout');
+const drs = [...stage.querySelectorAll('.dr')].sort((a,b)=>a.dataset.i-b.dataset.i);
+const slipEl = stage.querySelector('.slip');
+const ttl = document.getElementById('ttl');
+const bars = [...stage.querySelectorAll('.bar')];
+
+/* ---- state ---- */
+const state = { scan:null, open:null, ok:[false,false,false], out:false, grow:false,
+                title:'Q3 summary', data:Q3, phase:'idle', sub:'read only' };
+
+function render(){
+  drs.forEach((d,i)=>{
+    d.classList.toggle('open', state.open===i);
+    d.classList.toggle('scan', state.scan===i);
+    d.classList.toggle('ok', !!state.ok[i]);
+  });
+  slipEl.classList.toggle('out', state.out);
+  slipEl.classList.toggle('grow', state.grow);
+  if (ttl.textContent !== state.title) ttl.textContent = state.title;
+  bars.forEach((b,i)=>b.style.setProperty('--s', state.data[i]));
+  ro.innerHTML = state.phase==='scan'  ? `${state.sub} · <b>scanning</b>`
+               : state.phase==='print' ? `${state.sub} · <b>printing</b>`
+               : state.phase==='ready' ? `${state.sub} · <b>ready</b>`
+               : state.phase==='done'  ? `${state.sub} · <b>3 systems ok</b>`
+               : `${state.sub} · idle`;
+}
+const reset = () => Object.assign(state,{scan:null,open:null,ok:[false,false,false],out:false,grow:false,
+                  title:'Q3 summary',data:Q3,phase:'idle',sub:'read only'});
+
+/* ---- autoplay: pure function of time ---- */
+const LOOP = 11000;
+function frame(t){
+  const n = {scan:null,open:null,ok:[false,false,false],out:false,grow:false,
+             title:'Q3 summary',data:Q3,phase:'idle',sub:'read only'};
+  if (t>=600  && t<2000){ n.scan=0; n.open=0; n.phase='scan'; n.sub='orders'; }
+  else if (t>=2000 && t<3400){ n.scan=1; n.open=1; n.phase='scan'; n.sub='crm'; n.ok[0]=true; }
+  else if (t>=3400 && t<4800){ n.scan=2; n.open=2; n.phase='scan'; n.sub='finance'; n.ok[0]=n.ok[1]=true; }
+  else if (t>=4800 && t<5300){ n.ok=[true,true,true]; n.phase='done'; }
+  else if (t>=5300 && t<7600){ n.ok=[true,true,true]; n.out=true; n.grow=t>=6500; n.phase='print'; n.sub='Q3 summary'; }
+  else if (t>=7600 && t<10000){ n.ok=[true,true,true]; n.out=true; n.grow=true; n.phase='ready'; n.sub='Q3 summary'; }
+  else if (t>=10000 && t<10500){ n.ok=[true,true,true]; n.phase='done'; }
+  Object.assign(state,n); render();
+}
+
+let auto = { enabled:true, running:false, raf:0, t0:0, visible:true, key:'' };
+const reduce = matchMedia('(prefers-reduced-motion:reduce)');
+function loop(now){
+  if (!auto.running) return;
+  const t = (now - auto.t0) % LOOP;
+  const k = Math.floor(t/50);               // cheap change detection
+  if (k !== auto.key){ auto.key = k; frame(t); }
+  auto.raf = requestAnimationFrame(loop);
+}
+function startAuto(){
+  if (!auto.enabled || reduce.matches || auto.running || !auto.visible || document.hidden) return;
+  mode='auto'; document.body.classList.remove('fast');
+  reset(); render();
+  auto.running = true; auto.key=''; auto.t0 = performance.now();
+  auto.raf = requestAnimationFrame(loop);
+}
+function stopAuto(){ auto.running=false; cancelAnimationFrame(auto.raf); }
+
+/* ---- manual interaction ---- */
+let mode = 'auto', hover = null, pin = null, printT = 0, readyT = 0, resumeT = 0, inside = false;
+const sel = () => hover ?? pin;
+function takeOver(){
+  clearTimeout(resumeT);
+  if (mode==='auto'){ stopAuto(); mode='manual'; document.body.classList.add('fast'); reset(); render(); }
+}
+function scheduleResume(){
+  clearTimeout(resumeT);
+  if (!auto.enabled || reduce.matches) return;
+  resumeT = setTimeout(()=>{ if (!inside){ hover=null; pin=null; clearTimers(); startAuto(); } }, 4000);
+}
+function clearTimers(){ clearTimeout(printT); clearTimeout(readyT); }
+let shownFor = null;
+function apply(){
+  const k = sel();
+  if (k === shownFor) return;
+  const wasOut = state.out;
+  shownFor = k; clearTimers();
+  if (k === null){
+    Object.assign(state,{scan:null,open:null,out:false,grow:false,phase:'idle',sub:'read only'});
+    state.ok=[false,false,false]; render(); return;
+  }
+  Object.assign(state,{scan:k,open:k,out:false,grow:false,phase:'scan',sub:NAMES[k]});
+  state.ok=[false,false,false]; render();
+  printT = setTimeout(()=>{
+    Object.assign(state,{ok:state.ok.map((_,i)=>i===k),title:TITLES[k][0].toUpperCase()+TITLES[k].slice(1),data:DATA[k],
+      out:true,phase:'print',sub:TITLES[k]});
+    state.title = TITLES[k]; render();
+    requestAnimationFrame(()=>{ state.grow = true; render(); });
+    readyT = setTimeout(()=>{ state.phase='ready'; state.scan=null; render(); }, 650);
+  }, wasOut ? 950 : 700);
+}
+function bump(i){ const d = drs[i]; d.classList.add('down'); setTimeout(()=>d.classList.remove('down'),130); }
+
+[...stage.querySelectorAll('.hit')].forEach(d=>{
+  const i = +d.dataset.i;
+  d.addEventListener('pointerenter', e=>{ takeOver(); hover = i; apply(); });
+  d.addEventListener('pointerleave', e=>{ if (hover===i){ hover = null; apply(); scheduleResume(); } });
+  d.addEventListener('pointerdown', e=>{ takeOver(); bump(i); pin = (pin===i && e.pointerType!=='touch') ? null : i; hover = e.pointerType==='touch' ? null : hover; apply(); });
+});
+stage.addEventListener('pointerenter', ()=>{ inside = true; takeOver(); });
+stage.addEventListener('pointermove', ()=>{ if (mode==='auto') takeOver(); });
+stage.addEventListener('pointerdown', ()=>{ inside = true; takeOver(); });
+stage.addEventListener('pointerleave', ()=>{ inside = false; scheduleResume(); });
+window.addEventListener('keydown', e=>{
+  if (e.metaKey||e.ctrlKey||e.altKey) return;
+  if (e.key==='1'||e.key==='2'||e.key==='3'){
+    takeOver(); const i = +e.key-1; hover=null; pin = i; bump(i); apply(); if(!inside) scheduleResume(); e.preventDefault();
+  } else if (e.key==='Escape'||e.key==='0'){
+    takeOver(); hover=null; pin=null; apply(); if(!inside) scheduleResume(); e.preventDefault();
+  }
+});
+window.addEventListener('blur', ()=>{ hover=null; apply(); });
+
+/* ---- pause when offscreen / hidden ---- */
+if ('IntersectionObserver' in window){
+  new IntersectionObserver(es=>{
+    auto.visible = es[es.length-1].isIntersecting;
+    if (!auto.visible) stopAuto(); else if (mode==='auto') startAuto();
+  },{threshold:0.01}).observe(stage);
+}
+document.addEventListener('visibilitychange', ()=>{
+  if (document.hidden) stopAuto(); else if (mode==='auto') startAuto();
+});
+
+/* ---- boot ---- */
+auto.enabled = params.get('autoplay') !== '0';
+const freeze = params.get('t');
+if (freeze !== null){ auto.enabled=false; frame(+freeze*1000); }
+else if (reduce.matches || (!auto.enabled && params.get('rest')==='report')){
+  Object.assign(state,{ok:[true,true,true],out:true,grow:true,phase:'ready',sub:'Q3 summary'}); render();
+} else { reset(); render(); }
+if (auto.enabled && !reduce.matches) startAuto();
+window.__state = state; window.__frame = frame;
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+/* Design tokens measured from the TD_Alexfolio template (docs/forensics.md §Tokens).
+   Light theme is the capture; dark theme is the template's own prefers-color-scheme block,
+   values measured live. Components use these names only, never raw colours. */
+:root {
+  /* surfaces */
+  --page: #ffffff;
+  --page-deep: #121111;        /* projects section, footer, trust strip in dark */
+  --card: #ffffff;
+
+  /* ink */
+  --ink: #151414;
+  --ink-deep: #121111;         /* button fills */
+  --grey: #4f4a4a;             /* body copy */
+  --grey-light: #c4bfbf;       /* rules, muted */
+  --faint: #ebeaea;            /* un-revealed words, photo tint */
+  --reveal-dim: #ebeaea;       /* un-revealed characters in the scroll colour reveal */
+  --on-dark: #ffffff;          /* text on --page-deep */
+  --on-dark-muted: #a7a0a0;
+
+  /* accent */
+  --accent: #ff442b;
+  --accent-hover: #ff622e;
+
+  /* overlays */
+  --tint: #fff5f533;
+  --tint-0: #fff5f500;
+
+  /* layout */
+  --gutter: 20px;
+  --nav-h: 92px;
+  --radius-card: 20px;
+  --radius-pill: 56px;
+
+  /* motion: the one measured curve (650ms, CDP). The linear() string is the browser's own
+     sampling of Framer's spring — using it verbatim reproduces the easing exactly. */
+  --dur-reveal: 650ms;
+  --ease-reveal: linear(0 0%, 0.0212 1.5625%, 0.0703 3.125%, 0.1328 4.6875%, 0.2001 6.25%, 0.2675 7.8125%, 0.3323 9.375%, 0.3932 10.9375%, 0.4496 12.5%, 0.5015 14.0625%, 0.5488 15.625%, 0.5919 17.1875%, 0.6311 18.75%, 0.6665 20.3125%, 0.6986 21.875%, 0.7277 23.4375%, 0.7539 25%, 0.7777 26.5625%, 0.7991 28.125%, 0.8185 29.6875%, 0.836 31.25%, 0.8519 32.8125%, 0.8662 34.375%, 0.8791 35.9375%, 0.8908 37.5%, 0.9013 39.0625%, 0.9109 40.625%, 0.9195 42.1875%, 0.9272 43.75%, 0.9343 45.3125%, 0.9406 46.875%, 0.9464 48.4375%, 0.9515 50%, 0.9562 51.5625%, 0.9604 53.125%, 0.9643 54.6875%, 0.9677 56.25%, 0.9708 57.8125%, 0.9736 59.375%, 0.9762 60.9375%, 0.9785 62.5%, 0.9806 64.0625%, 0.9824 65.625%, 0.9841 67.1875%, 0.9857 68.75%, 0.9871 70.3125%, 0.9883 71.875%, 0.9894 73.4375%, 0.9905 75%, 0.9914 76.5625%, 0.9922 78.125%, 0.993 79.6875%, 0.9936 81.25%, 0.9943 82.8125%, 0.9948 84.375%, 0.9953 85.9375%, 0.9958 87.5%, 0.9962 89.0625%, 0.9965 90.625%, 0.9969 92.1875%, 0.9972 93.75%, 0.9975 95.3125%, 0.9977 96.875%, 0.9979 98.4375%, 1 100%);
+  --marquee-loop: 39.4s;
+  --hidden: 0.001;             /* entrance opacity: keeps the layer composited (Framer's trick) */
+}
+
+/* dark values measured live on the template with prefers-color-scheme: dark */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #121111;
+    --card: #121111;
+    --ink: #ffffff;
+    --grey: #a7a0a0;
+    --grey-light: #403b3b;
+    --faint: #403b3b;
+    --reveal-dim: #222020;
+    --accent: #f05038;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #121111;
+  --card: #121111;
+  --ink: #ffffff;
+  --grey: #a7a0a0;
+  --grey-light: #403b3b;
+  --faint: #403b3b;
+  --reveal-dim: #222020;
+  --accent: #f05038;
+}

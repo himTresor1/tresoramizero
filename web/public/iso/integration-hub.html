@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fig 4 · Integration hub</title>
+<script>
+  if (new URLSearchParams(location.search).get('bare') === '1') document.documentElement.classList.add('bare');
+</script>
+<style>
+:root{
+  color-scheme:light;
+  --page:#e9eaea; --panel:#f6f6f5; --line:#70757b; --detail:#b9bdc2;
+  --body:#fafafa; --deck:#ffffff; --card:#ffffff; --ink:#4b4f55; --live:#F97316; --cap:#5d6064;
+  --glass:#FFFFFF; --scr-ink:#4b4f55; --scr-dim:#a5a9af;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--page);color:var(--ink);display:grid;place-items:center;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.panel{width:min(94vw,920px);background:var(--panel);border:1px solid var(--detail);border-radius:16px;padding:18px 22px 16px}
+.cap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 18px;
+  font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--cap)}
+.cap .fig,.cap #readout{text-transform:none;letter-spacing:.06em}
+.cap #readout{color:var(--ink)}
+svg{display:block;width:100%;height:auto;margin:6px 0;outline:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+svg:focus-visible{outline:1px dashed var(--detail);outline-offset:4px}
+
+html.bare,html.bare body{background:transparent;display:block;overflow:hidden}
+html.bare .panel{width:100vw;height:100vh;background:transparent;border:0;border-radius:0;padding:0}
+html.bare .cap{display:none}
+html.bare svg{width:100vw;height:100vh;margin:0}
+
+/* kernel faces */
+.face{fill:var(--body);stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.face.top{fill:var(--deck)}
+.detail{fill:none;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.hit{fill:rgba(0,0,0,0);stroke:none}
+.glass{fill:var(--glass)}
+text{font-family:var(--sans);pointer-events:none}
+
+.press{cursor:pointer;transition:transform 60ms ease-out}
+.press.down{transform:translateY(4px)}
+.press.down .face{stroke:var(--live)}
+.lbl{fill:var(--ink);font-size:29px;font-weight:500;letter-spacing:-.01em;transition:fill 80ms}
+.mod.sel .lbl{fill:var(--live)}
+.wm{fill:var(--ink);font-size:46px;font-weight:500;letter-spacing:-.02em}
+
+.cable{fill:none;stroke:var(--live);stroke-width:2;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round;opacity:.7;transition:opacity 120ms}
+.pad{fill:var(--live);opacity:.7;transition:opacity 120ms}
+.dim .cable{opacity:.16}.dim .pad{opacity:.16}
+.cable.on,.pad.on{opacity:1}
+.cable.on{stroke-width:2.6;stroke-dasharray:7 7;animation:flow .7s linear infinite}
+#cables.all .cable.on{stroke-dasharray:none;animation:none;stroke-width:2.2}
+@keyframes flow{to{stroke-dashoffset:-14}}
+
+.scr1{fill:var(--scr-ink);font-weight:500}
+.scr2{fill:var(--scr-dim);font-weight:500}
+.scr2.live{fill:var(--live)}
+
+#card{transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.cardt{fill:var(--scr-ink);font-size:27px;font-weight:500}
+.dot{fill:var(--live)}
+
+@media (prefers-reduced-motion:reduce){
+  .press,#card{transition:none}
+  .cable.on{animation:none;stroke-dasharray:none}
+  .cable,.pad,.lbl{transition:none}
+}
+</style>
+</head>
+<body>
+<main class="panel">
+  <header class="cap"><span class="fig">Fig 4</span><span>Integration hub</span></header>
+  <svg id="stage" viewBox="47.3 24.7 901.2 450.6" preserveAspectRatio="xMidYMid meet" role="img" tabindex="0"
+    aria-label="Isometric integration hub: six tool modules (Slack, Teams, Notion, Drive, OneDrive, Meet) wired to one Script hub. Hover or press a module, or press keys 1 to 6, to light its cable and see it connect. Plays by itself when idle."></svg>
+  <footer class="cap"><span class="fig">hover or press a tool · keys 1–6</span><span id="readout">6 tools · 1 brain</span></footer>
+</main>
+<script>
+/* ---- kernel ---- */
+const C = Math.cos(Math.PI/6), S = Math.sin(Math.PI/6), OX = 396, OY = 47;
+const P = (x,y,z) => [(x-y)*C + OX, (x+y)*S - z + OY];
+const D = (x,y,z) => [(x-y)*C, (x+y)*S - z];
+const plane = (O,U,V) => { const o=P(...O), u=D(...U), v=D(...V);
+  return `matrix(${u[0]} ${u[1]} ${v[0]} ${v[1]} ${o[0]} ${o[1]})`; };
+const TOP   = (x,y,z) => plane([x,y,z],[1,0,0],[0,1,0]);
+const FRONT = (x,y,z) => plane([x,y,z],[1,0,0],[0,0,-1]);
+const SIDE  = (x,y,z) => plane([x,y,z],[0,-1,0],[0,0,-1]);
+const rect = (t,w,h,r=0,cls='face') =>
+  `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+const box = (x,y,z,w,d,h,r=0) =>
+  rect(SIDE(x+w,y+d,z+h), d,h,Math.min(r,h/4)) +
+  rect(FRONT(x,y+d,z+h), w,h,Math.min(r,h/4)) +
+  rect(TOP(x,y,z+h), w,d,r,'face top');
+const hitbox = (x,y,z,w,d,h) =>
+  rect(SIDE(x+w,y+d,z+h), d,h,0,'hit') + rect(FRONT(x,y+d,z+h), w,h,0,'hit') + rect(TOP(x,y,z+h), w,d,0,'hit') + rect(TOP(x,y,z), w,d,0,'hit');
+
+/* ---- scene table (x right-down, y left-down, z up) ----
+   plate   0,0,0      530x294x8        desk top z=8
+   hub     326,8,8    190x92x92        screen on front face, wordmark on top, answer card pops from top slot
+   slabs   142x50x12  two rows of three (y=148 back, y=236 front)
+   cables  flat on desk: risers into the lanes between rows, then to hub front base.
+           Back row -> corridor lanes (y 110-126); front row -> mid lanes (y 202-218) then up the free x>466 strip. */
+const DESK=8, MW=142, MD=50, MH=12;
+const HUB={x:326,y:8,w:190,d:92,h:92}, ZT=DESK+HUB.h;
+const TOOLS=[
+  {id:'slack',   name:'Slack',    x:10,  y:148, lane:110, port:350},
+  {id:'teams',   name:'Teams',    x:162, y:148, lane:118, port:368},
+  {id:'notion',  name:'Notion',   x:314, y:148, lane:126, port:398},
+  {id:'drive',   name:'Drive',    x:10,  y:236, lane:202, port:470},
+  {id:'onedrive',name:'OneDrive', x:162, y:236, lane:210, port:486},
+  {id:'meet',    name:'Meet',     x:314, y:236, lane:218, port:502},
+];
+TOOLS.forEach((t,i)=>t.i=i);
+const rounded=(pts,r=6)=>{ let d=`M${pts[0][0]} ${pts[0][1]}`;
+  for(let k=1;k<pts.length-1;k++){ const a=pts[k-1],b=pts[k],c=pts[k+1];
+    const l1=Math.hypot(b[0]-a[0],b[1]-a[1]), l2=Math.hypot(c[0]-b[0],c[1]-b[1]), rr=Math.min(r,l1/2,l2/2);
+    const p=[b[0]-(b[0]-a[0])/l1*rr, b[1]-(b[1]-a[1])/l1*rr], q=[b[0]+(c[0]-b[0])/l2*rr, b[1]+(c[1]-b[1])/l2*rr];
+    d+=`L${p[0]} ${p[1]}Q${b[0]} ${b[1]} ${q[0]} ${q[1]}`; }
+  const e=pts[pts.length-1]; return d+`L${e[0]} ${e[1]}`; };
+
+let svg='';
+const cardX0=HUB.x+25, cardW=140, cardH=44, cardY=HUB.y+16;
+const clipPts=[[cardX0-3,cardY,ZT],[cardX0+cardW+3,cardY,ZT],[cardX0+cardW+3,cardY,ZT+200],[cardX0-3,cardY,ZT+200]].map(p=>P(...p).map(n=>n.toFixed(2)).join(',')).join(' ');
+svg+=`<defs><clipPath id="cc" clipPathUnits="userSpaceOnUse"><polygon points="${clipPts}"/></clipPath></defs>`;
+
+svg+=box(0,0,0,530,294,DESK,10);
+svg+=`<g transform="${TOP(0,0,DESK)}"><rect class="detail" x="6" y="6" width="518" height="282" rx="6"/></g>`;
+
+/* hub first: it sits behind everything else */
+svg+=box(HUB.x,HUB.y,DESK,HUB.w,HUB.d,HUB.h,6);
+svg+=`<g transform="${TOP(HUB.x,HUB.y,ZT)}">
+  <rect class="detail" x="${25-3}" y="${cardY-HUB.y-2}" width="${cardW+6}" height="4" rx="2"/>
+  <rect class="detail" x="10" y="34" width="${HUB.w-20}" height="${HUB.d-44}" rx="7"/>
+  <text class="wm" x="${HUB.w/2}" y="${HUB.d-19}" text-anchor="middle">Script</text>
+</g>`;
+svg+=`<g transform="${FRONT(HUB.x,HUB.y+HUB.d,ZT)}">
+  <rect class="face glass" x="10" y="9" width="${HUB.w-20}" height="70" rx="7"/>
+  <text id="scr1" class="scr1" x="21" y="41" font-size="38">6 tools</text>
+  <text id="scr2" class="scr2" x="21" y="69" font-size="27">1 brain</text>
+</g>`;
+/* answer card: a card standing in the top slot, clipped so it can retract into the hub */
+svg+=`<g clip-path="url(#cc)"><g id="card"><g transform="${FRONT(cardX0,cardY,ZT+cardH)}">
+  <rect class="face glass" width="${cardW}" height="${cardH}" rx="4"/>
+  <circle class="dot" cx="17" cy="22" r="5"/>
+  <text class="cardt" x="30" y="31">Answer</text>
+</g></g></g>`;
+
+/* cables, flat on the desk */
+svg+=`<g id="cables" transform="${TOP(0,0,DESK)}">`+TOOLS.map(t=>{
+  const cx=t.x+MW/2;
+  return `<path class="cable" data-i="${t.i}" d="${rounded([[cx,t.y+2],[cx,t.lane],[t.port,t.lane],[t.port,101]])}"/><circle class="pad" data-i="${t.i}" cx="${t.port}" cy="102" r="3.4"/>`;
+}).join('')+`</g>`;
+
+/* modules, painter's order (back row left->right, then front row) */
+[...TOOLS].sort((a,b)=>(a.y-b.y)||(a.x-b.x)).forEach(t=>{
+  svg+=`<g class="mod" data-i="${t.i}">${hitbox(t.x,t.y,DESK,MW,MD,MH)}
+  <g class="press">${box(t.x,t.y,DESK,MW,MD,MH,5)}
+    <g transform="${TOP(t.x,t.y,DESK+MH)}"><text class="lbl" x="${MW/2}" y="${MD/2+10}" text-anchor="middle">${t.name}</text></g>
+  </g></g>`;
+});
+
+const stage=document.getElementById('stage');
+stage.insertAdjacentHTML('beforeend',svg);
+
+/* ---- state + render ---- */
+const state={hover:null,pinned:null};
+const auto={timers:[],running:false,offscreen:false,hidden:document.hidden,interacting:false,inside:false,idle:0,sel:null,all:false,answer:false};
+const readout=document.getElementById('readout');
+const mods=[...stage.querySelectorAll('.mod')].reduce((a,e)=>(a[e.dataset.i]=e,a),[]);
+const cables=[...stage.querySelectorAll('.cable')], pads=[...stage.querySelectorAll('.pad')];
+const cablesG=stage.querySelector('#cables'), card=stage.querySelector('#card');
+const scr1=stage.querySelector('#scr1'), scr2=stage.querySelector('#scr2');
+const retract=(cardH+4);
+card.style.transform=`translateY(${retract}px)`;
+
+function setScr(a,b,live){
+  scr1.textContent=a; scr1.setAttribute('font-size',Math.min(38,152/(a.length*0.58)).toFixed(1));
+  scr2.textContent=b; scr2.setAttribute('class','scr2'+(live?' live':''));
+}
+function render(){
+  const user = state.hover!=null ? state.hover : state.pinned;
+  const sel = user!=null ? user : auto.sel;
+  const all = user==null && sel==null && auto.all;
+  const answer = state.pinned!=null || (user==null && auto.answer);
+  mods.forEach((el,i)=>{ const on=i===sel; el.classList.toggle('sel',on); el.querySelector('.press').classList.toggle('down',on); });
+  cablesG.classList.toggle('dim', sel!=null); cablesG.classList.toggle('all', all);
+  cables.forEach(c=>c.classList.toggle('on', all || +c.dataset.i===sel));
+  pads.forEach(c=>c.classList.toggle('on', all || +c.dataset.i===sel));
+  card.style.transform = answer ? 'translateY(0)' : `translateY(${retract}px)`;
+  if(sel!=null){ const id=TOOLS[sel].id; setScr(id,'connected',true); readout.textContent=id+' · connected'; }
+  else if(all){ setScr('6 tools','connected',true); readout.textContent='6 tools · connected'; }
+  else { setScr('6 tools','1 brain',false); readout.textContent='6 tools · 1 brain'; }
+  stage.dataset.sel = sel==null?'':TOOLS[sel].id;
+}
+
+/* ---- autoplay scheduler (~12s loop) ---- */
+const qs=new URLSearchParams(location.search);
+const mqRM=window.matchMedia('(prefers-reduced-motion: reduce)');
+const canAuto=()=>qs.get('autoplay')!=='0' && !mqRM.matches;
+const at=(ms,fn)=>auto.timers.push(setTimeout(fn,ms));
+function clearTimers(){ auto.timers.forEach(clearTimeout); auto.timers=[]; }
+function autoReset(){ auto.sel=null; auto.all=false; auto.answer=false; }
+function autoStart(){
+  clearTimers(); autoReset(); auto.running=true; render();
+  TOOLS.forEach((t,i)=>at(500+i*1200,()=>{ auto.sel=i; render(); }));
+  at(7700,()=>{ auto.sel=null; auto.all=true; render(); });
+  at(8300,()=>{ auto.answer=true; render(); });
+  at(11000,()=>{ auto.answer=false; render(); });
+  at(11600,()=>{ auto.all=false; render(); });
+  at(12000,autoStart);
+}
+function autoStop(){ clearTimers(); auto.running=false; autoReset(); }
+function evaluate(){
+  const want=canAuto() && !auto.offscreen && !auto.hidden && !auto.interacting;
+  if(want && !auto.running) autoStart();
+  else if(!want && auto.running){ autoStop(); render(); }
+}
+function touch(){ auto.interacting=true; clearTimeout(auto.idle); evaluate(); }
+function release(){
+  clearTimeout(auto.idle);
+  auto.idle=setTimeout(()=>{ if(auto.inside) return; state.pinned=null; state.hover=null; auto.interacting=false; render(); evaluate(); },4000);
+}
+
+/* ---- input ---- */
+function pin(i){ state.pinned = state.pinned===i ? null : i; render(); }
+mods.forEach((el,i)=>{
+  el.addEventListener('pointerenter',()=>{ touch(); state.hover=i; render(); });
+  el.addEventListener('pointerleave',()=>{ if(state.hover===i){ state.hover=null; render(); } });
+  el.addEventListener('click',()=>{ touch(); state.hover=i; pin(i); });
+});
+stage.addEventListener('pointerenter',()=>{ auto.inside=true; touch(); });
+stage.addEventListener('pointermove',()=>{ if(!auto.interacting) touch(); else clearTimeout(auto.idle); });
+stage.addEventListener('pointerdown',touch);
+stage.addEventListener('pointerleave',()=>{ auto.inside=false; state.hover=null; render(); release(); });
+window.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  if(/^[1-6]$/.test(e.key)){ touch(); pin(+e.key-1); if(!auto.inside) release(); e.preventDefault(); }
+  else if(e.key==='Escape'){ touch(); state.pinned=null; state.hover=null; render(); if(!auto.inside) release(); }
+});
+window.addEventListener('blur',()=>{ state.hover=null; render(); });
+document.addEventListener('visibilitychange',()=>{ auto.hidden=document.hidden; evaluate(); });
+if(mqRM.addEventListener) mqRM.addEventListener('change',evaluate);
+let io=null;
+if('IntersectionObserver' in window){
+  auto.offscreen=true;
+  io=new IntersectionObserver(es=>{ auto.offscreen=!es[es.length-1].isIntersecting; evaluate(); },{threshold:0.1});
+  io.observe(stage);
+} else auto.offscreen=false;
+window.addEventListener('pagehide',()=>{ clearTimers(); clearTimeout(auto.idle); if(io) io.disconnect(); });
+render(); evaluate();
+</script>
+</body>
+</html>

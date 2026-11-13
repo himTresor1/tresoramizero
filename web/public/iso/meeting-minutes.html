@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fig 10 · Meeting minutes</title>
+<style>
+:root{
+  --page:#e9eaea; --panel:#f6f6f5;
+  --line:#70757b;  --detail:#b9bdc2;
+  --body:#fafafa; --deck:#ffffff; --card:#ffffff;
+  --ink:#4b4f55;
+  --glass:#FFFFFF; --scr-ink:#4b4f55; --scr-dim:#a5a9af;
+  --live:#F97316;
+  --cap:#5d6064;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--page);color:var(--ink);font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.plate{background:var(--panel);border-radius:18px;padding:22px 26px;width:min(100%,480px);
+  display:flex;flex-direction:column;gap:10px}
+.caps{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;color:var(--cap);letter-spacing:.14em}
+.caps .fig,.caps .out{text-transform:none;letter-spacing:.06em}
+.caps .name{text-transform:uppercase}
+.caps .out{color:var(--ink)}
+.caps .out b{color:var(--live);font-weight:500}
+svg#stage{display:block;width:100%;height:auto;aspect-ratio:3/2;outline:none;overflow:visible;touch-action:manipulation}
+svg#stage:focus-visible{outline:1px dashed var(--detail);outline-offset:4px;border-radius:8px}
+
+/* bare: embeddable, no chrome */
+body.bare{background:transparent;padding:0;display:block}
+body.bare .plate{background:transparent;padding:0;width:100%;height:100%;border-radius:0;gap:0}
+body.bare .caps{display:none}
+body.bare svg#stage{width:100%;height:100%;aspect-ratio:auto}
+
+/* geometry */
+.face{fill:var(--body);stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.face.top{fill:var(--deck)}
+.desk .face.top{fill:var(--body)}
+.desk .face{fill:var(--panel)}
+.detail{fill:none;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.dot{fill:var(--detail);opacity:.7}
+.slot{fill:var(--detail);fill-opacity:.32;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke}
+.t{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;fill:var(--scr-ink);pointer-events:none}
+.t.lbl{font-weight:500}
+.led{fill:var(--detail)}
+.led.on{fill:var(--live)}
+.ov{fill:var(--live);opacity:0;pointer-events:none}
+.bar .face.top{fill:var(--card)}
+.bar.live .face.top{fill:var(--live)}
+
+/* paper slip */
+.paper{fill:var(--card);stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
+.rule{fill:none;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:2 2;opacity:.8}
+.slip .lab{fill:var(--cap)}
+.caret{fill:var(--live)}
+
+/* press */
+.press{cursor:pointer;transition:transform 60ms ease-out}
+.press.down{transform:translateY(4px)}
+.press.down .face{stroke:var(--live)}
+.hit{fill:transparent;stroke:none}
+@media (prefers-reduced-motion:reduce){
+  .press{transition:none}
+}
+</style>
+</head>
+<body>
+<main class="plate">
+  <div class="caps"><span class="fig">Fig 10</span><span class="name">Meeting minutes</span></div>
+  <svg id="stage" viewBox="28.4 19.2 303.3 202.2" role="img" tabindex="0"
+       aria-label="Isometric conference speakerphone puck with live level bars, a minutes printer that prints a slip reading Standup Tue, Decision ship Friday, Action Ana to slides, and a knowledge base tray the slip slides into. It plays itself. Hover or press the puck, or press space or enter, to record and print minutes; press the tray to print again."></svg>
+  <div class="caps"><span class="ins">Hover the puck · press the tray</span><span class="out" id="readout">idle</span></div>
+</main>
+<script>
+const params = new URLSearchParams(location.search);
+if (params.get('bare') === '1') document.body.classList.add('bare');
+const AUTOPLAY = params.get('autoplay') !== '0';
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---- kernel (scaled by K) ---- */
+const K = 1.06, C = Math.cos(Math.PI/6)*K, SN = Math.sin(Math.PI/6)*K, OX = 131.3, OY = 63.3;
+const P = (x,y,z) => [(x-y)*C + OX, (x+y)*SN - z*K + OY];
+const D = (x,y,z) => [(x-y)*C, (x+y)*SN - z*K];
+const plane = (O,U,V) => { const o=P(...O), u=D(...U), v=D(...V);
+  return `matrix(${u[0]} ${u[1]} ${v[0]} ${v[1]} ${o[0]} ${o[1]})`; };
+const TOP   = (x,y,z) => plane([x,y,z],[1,0,0],[0,1,0]);
+const FRONT = (x,y,z) => plane([x,y,z],[1,0,0],[0,0,-1]);
+const SIDE  = (x,y,z) => plane([x,y,z],[0,-1,0],[0,0,-1]);
+const rect = (t,w,h,r=0,cls='face') =>
+  `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+const box = (x,y,z,w,d,h,r=0) =>
+  rect(SIDE(x+w,y+d,z+h), d,h,Math.min(r,h/4)) +
+  rect(FRONT(x,y+d,z+h), w,h,Math.min(r,h/4)) +
+  rect(TOP(x,y,z+h), w,d,r,'face top');
+
+/* ---- scene table ----
+ desk    (0,0,0)    202x82x5
+ printer (70,6,5)   124x24x18   top z=23, slot y=12
+ puck    (2,32,5)   56x34x22    top z=27
+ tray    (70,46,5)  124x30x14   top z=19, slot y=52
+ slip    x 74..190 (116 wide), 55 tall, stands on the slot plane */
+const PRT = {x:70,y:6,z:5,w:124,d:24,h:18};
+const PUCK = {x:-8,y:32,z:5,w:60,d:34,h:24};
+const TRAY = {x:70,y:46,z:5,w:124,d:30,h:14};
+const SX = 74, SW = 116, HP = 55, B = [14,33,47];
+const SLOT_P = 12, SLOT_T = 52, Z_P = PRT.z+PRT.h, Z_T = TRAY.z+TRAY.h;
+const LINES = [
+  [['Standup · Tue','b']],
+  [['Decision:','lab'],[' ship Friday','']],
+  [['Action:','lab'],[' Ana → slides','']],
+];
+const LEN = LINES.map(l => l.reduce((a,p)=>a+p[0].length,0));
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+function build(){
+  let s = '';
+  s += `<g class="desk">${box(-14,0,0,216,82,5,9)}</g>`;
+
+  // printer
+  s += `<g id="printer">${box(PRT.x,PRT.y,PRT.z,PRT.w,PRT.d,PRT.h,4)}
+    <g transform="${TOP(PRT.x,PRT.y,Z_P)}"><rect class="slot" x="2" y="4" width="120" height="4" rx="1.5"/></g>
+    <g transform="${FRONT(PRT.x,PRT.y+PRT.d,Z_P)}">
+      <circle id="ledP" class="led" cx="10" cy="9" r="2.5"/>
+      <text class="t lbl" x="18" y="12.8" font-size="10">minutes</text>
+      <path class="detail" d="M92 6H116M92 9H116M92 12H116"/>
+    </g></g>`;
+
+  // puck
+  const pz = PUCK.z+PUCK.h;
+  let dots = '';
+  for (let r=0;r<2;r++) for (let i=0;i<8;i++) dots += `<circle class="dot" cx="${8+i*6.3}" cy="${21+r*6.5}" r="1.15"/>`;
+  s += `<g class="press" id="puck" data-act="rec">${box(PUCK.x,PUCK.y,PUCK.z,PUCK.w,PUCK.d,PUCK.h,9)}
+    <g transform="${TOP(PUCK.x,PUCK.y,pz)}"><rect class="detail" x="3" y="2.5" width="54" height="12" rx="4"/>${dots}</g>
+    <g id="bars"></g>
+    <g transform="${FRONT(PUCK.x,PUCK.y+PUCK.d,pz)}">
+      <circle id="ledR" class="led" cx="8" cy="12" r="2.7"/>
+      <text class="t lbl" x="15" y="15.6" font-size="10">listening</text>
+    </g></g>`;
+
+  // tray + slip
+  const tz = Z_T;
+  s += `<g class="press" id="tray" data-act="print">${box(TRAY.x,TRAY.y,TRAY.z,TRAY.w,TRAY.d,TRAY.h,4)}
+    <g transform="${TOP(TRAY.x,TRAY.y,tz)}">
+      <rect class="slot" x="2" y="4" width="120" height="4" rx="1.5"/>
+      <rect class="ov" id="ovSlot" x="2" y="4" width="120" height="4" rx="1.5"/></g>
+    <g transform="${FRONT(TRAY.x,TRAY.y+TRAY.d,tz)}">
+      <rect class="ov" id="ovFront" width="124" height="14" rx="3.5"/>
+      <text class="t lbl" x="62" y="10.6" font-size="10" text-anchor="middle">knowledge base</text></g>
+    <g transform="${SIDE(TRAY.x+TRAY.w,TRAY.y+TRAY.d,tz)}"><rect class="ov" id="ovSide" width="30" height="14" rx="3.5"/></g>
+    <g id="slip" class="slip" style="display:none">
+      <clipPath id="sclip"><rect id="sclipR" x="-2" y="-2" width="${SW+4}" height="10"/></clipPath>
+      <g clip-path="url(#sclip)">
+        <rect class="paper" id="paper" x="0" y="0" width="${SW}" height="${HP}" rx="2"/>
+        <path class="rule" d="M8 20H${SW-8}"/>
+        ${LINES.map((l,i)=>`<text class="t" id="ln${i}" x="8" y="${B[i]}" font-size="${i?10:10.5}" font-weight="${i?400:500}" xml:space="preserve">${l.map((p,j)=>`<tspan id="ln${i}_${j}" class="${p[1]==='lab'?'lab':''}"></tspan>`).join('')}</text>`).join('')}
+        <rect class="caret" id="caret" width="4.5" height="10" y="0" x="0" style="display:none"/>
+      </g>
+    </g></g>`;
+  return s;
+}
+
+const stage = document.getElementById('stage');
+stage.innerHTML = build();
+const $ = id => document.getElementById(id);
+const ro = $('readout'), barsG = $('bars'), slipG = $('slip'), puckEl = $('puck'), trayEl = $('tray');
+const ledP = $('ledP'), ledR = $('ledR'), paper = $('paper'), sclipR = $('sclipR'), caret = $('caret');
+const ovs = [$('ovSlot'),$('ovFront'),$('ovSide')];
+const lnEl = LINES.map((l,i)=>({t:$('ln'+i), parts:l.map((p,j)=>$(`ln${i}_${j}`))}));
+
+/* ---- timeline (seconds, 12 s loop) ---- */
+const LS=.3, PS=4.0, LINE=1.25, FEED=.3, TAIL=PS+3*LINE, SLIDE0=8.1, SLIDE1=8.9, SINK1=9.5, FLASH1=11.5, SWAL1=11.9, LOOP=12.2;
+const ease = x => x<=0?0 : x>=1?1 : x*x*(3-2*x);
+const lerp = (a,b,t) => a+(b-a)*t;
+const clamp01 = x => Math.max(0,Math.min(1,x));
+const SINK_Z = Z_T-(HP-23);              // resting height of the slip bottom: only the title tab shows
+const FK = [[0,0],[.12,1],[.55,1],[.8,.3],[1.05,1],[1.45,1],[1.95,0]];
+const pulse = w => { if (w<=0||w>=1.95) return 0;
+  for (let i=1;i<FK.length;i++) if (w<=FK[i][0]) return lerp(FK[i-1][1],FK[i][1],(w-FK[i-1][0])/(FK[i][0]-FK[i-1][0]));
+  return 0; };
+
+function pose(mode,t){
+  const o = {amp:0,p:0,n:[0,0,0],caret:-1,y:SLOT_P,zb:Z_P,alpha:0,flash:0,led:false,lis:false,ro:'idle',tt:t};
+  if (mode==='rest'){ o.p=HP; o.n=LEN.slice(); o.alpha=1; return o; }
+  if (t>=LS && t<PS){
+    o.lis = true;
+    o.amp = ease((t-LS)/.25)*(t>PS-.3 ? ease((PS-t)/.3) : 1);
+    const sec = Math.floor((t-LS)/(PS-LS)*12);
+    o.ro = 'listening · 00:'+String(sec).padStart(2,'0');
+    return o;
+  }
+  if (t<LS) return o;
+  o.alpha = 1; o.p = HP; o.n = LEN.slice();
+  o.amp = Math.max(0,1-(t-PS)/.35)*.5;
+  if (t<SLIDE0){
+    const u = t-PS;
+    if (u<3*LINE){
+      const k = Math.min(2,Math.floor(u/LINE)), lu = u-k*LINE;
+      const prev = k? B[k-1]+5 : 0;
+      o.p = lerp(prev,B[k]+5,ease(lu/FEED));
+      o.n = LEN.map((L,i)=> i<k?L : i===k? Math.floor(L*clamp01((lu-FEED)/(LINE-FEED-.08))) : 0);
+      o.caret = k; o.led = true; o.ro = `printing · line ${k+1}/3`;
+    } else {
+      o.p = lerp(B[2]+5,HP,ease((u-3*LINE)/.25)); o.led = u<3*LINE+.3;
+      o.ro = 'minutes ready · 3 lines';
+    }
+  } else if (t<SLIDE1){
+    const s = ease((t-SLIDE0)/(SLIDE1-SLIDE0));
+    o.y = lerp(SLOT_P,SLOT_T,s); o.zb = Z_P+5*Math.sin(Math.PI*s); o.ro='filing · 3 lines';
+  } else if (t<SINK1){
+    const s = ease((t-SLIDE1)/(SINK1-SLIDE1));
+    o.y = SLOT_T; o.zb = lerp(Z_P,SINK_Z,s); o.ro='filing · 3 lines';
+  } else if (t<FLASH1){
+    o.y = SLOT_T; o.zb = SINK_Z; o.flash = pulse(t-SINK1); o.ro='minutes filed · <b>3 lines</b>';
+  } else if (t<SWAL1){
+    o.y = SLOT_T; o.zb = lerp(SINK_Z,Z_T-HP-4,ease((t-FLASH1)/(SWAL1-FLASH1)));
+  } else { o.alpha = 0; }
+  if (mode==='filed'){ o.ro='minutes filed · <b>3 lines</b>'; }
+  return o;
+}
+
+/* ---- state ---- */
+const S = { mode:'rest', t:0 };   // mode: rest | auto | run | filed
+
+let lastSig = '';
+function barsSVG(o){
+  let out = '';
+  for (let i=0;i<5;i++){
+    const w = o.amp*(2+17*(.5+.5*Math.sin(o.tt*(7.3+i*1.9)+i*2.1))*(.62+.38*Math.sin(o.tt*2.3+i*1.3)));
+    const h = Math.round((2+w)*2)/2;
+    out += `<g class="bar${o.lis?' live':''}">${box(PUCK.x+5+i*11,PUCK.y+5,PUCK.z+PUCK.h,6,6,h,1)}</g>`;
+  }
+  return out;
+}
+
+function render(){
+  const o = pose(S.mode,S.t);
+  const bs = barsSVG(o); if (bs!==lastSig){ barsG.innerHTML = bs; lastSig = bs; }
+  ledR.classList.toggle('on', o.lis);
+  ledP.classList.toggle('on', o.led);
+  // slip
+  const zTop = o.zb + o.p, plane_ = o.y>40 ? Z_T : Z_P;
+  const clipH = Math.min(o.p, zTop-plane_);
+  if (o.alpha && o.p>1 && clipH>0){
+    slipG.style.display = '';
+    slipG.setAttribute('transform', FRONT(SX,o.y,zTop));
+    paper.setAttribute('height', o.p.toFixed(2));
+    sclipR.setAttribute('height', (clipH+2).toFixed(2));
+    LINES.forEach((l,i)=>{
+      let n = o.n[i];
+      l.forEach((p,j)=>{ const m = Math.max(0,Math.min(p[0].length,n)); n -= p[0].length; lnEl[i].parts[j].textContent = p[0].slice(0,m); });
+      lnEl[i].t.style.display = o.n[i]>0 ? '' : 'none';
+    });
+    if (o.caret>=0 && o.n[o.caret]>0){
+      const len = lnEl[o.caret].t.getComputedTextLength();
+      caret.setAttribute('x',(8+len+1.5).toFixed(2)); caret.setAttribute('y',B[o.caret]-8.4); caret.style.display='';
+    } else caret.style.display='none';
+  } else slipG.style.display = 'none';
+  // tray flash
+  ovs.forEach(e=>e.style.opacity = o.flash.toFixed(3));
+  ro.innerHTML = o.ro;
+}
+
+/* ---- control ---- */
+let inside = false, lastAct = performance.now(), runStart = 0;
+const act = () => { lastAct = performance.now(); };
+function setRest(){ S.mode='rest'; S.t=0; render(); }
+function stopAuto(){ if (S.mode==='auto') setRest(); }
+function startRun(kind){
+  act();
+  if (RM){ S.mode='filed'; S.t=FLASH1; render(); return; }
+  S.mode='run'; S.t = kind==='print' ? PS : LS; runStart = performance.now(); render();
+}
+function bump(el){ el.classList.add('down'); setTimeout(()=>el.classList.remove('down'),110); }
+
+stage.addEventListener('pointerenter', e=>{ inside=true; act(); stopAuto(); });
+stage.addEventListener('pointermove', ()=>{ act(); stopAuto(); });
+stage.addEventListener('pointerleave', ()=>{ inside=false; act(); });
+puckEl.addEventListener('pointerenter', e=>{
+  if (e.pointerType==='touch') return;
+  if (S.mode!=='run') startRun('rec');
+});
+puckEl.addEventListener('pointerdown', ()=>{
+  act(); stopAuto(); bump(puckEl);
+  if (S.mode!=='run' || performance.now()-runStart>700) startRun('rec');
+});
+trayEl.addEventListener('pointerdown', ()=>{ act(); stopAuto(); bump(trayEl); startRun('print'); });
+$('printer').addEventListener('pointerdown', ()=>{ act(); stopAuto(); startRun('print'); });
+window.addEventListener('keydown', e=>{
+  if (e.metaKey||e.ctrlKey||e.altKey) return;
+  const tg = e.target && e.target.tagName; if (tg==='INPUT'||tg==='TEXTAREA') return;
+  if (e.key===' '||e.key==='Enter'){ if (e.repeat) return; act(); stopAuto(); bump(puckEl); startRun('rec'); e.preventDefault(); }
+  else if (e.key==='p'||e.key==='P'){ act(); stopAuto(); bump(trayEl); startRun('print'); }
+  else if (e.key==='Escape'){ act(); setRest(); }
+});
+window.addEventListener('blur', ()=>{ inside=false; act(); });
+
+/* ---- loop: autoplay, pause offscreen / hidden ---- */
+let raf = 0, last = 0, visible = true;
+function tick(now){
+  raf = requestAnimationFrame(tick);
+  const dt = Math.min(.1,(now-last)/1000); last = now;
+  if (S.mode==='auto'){ S.t = (S.t+dt)%LOOP; render(); }
+  else if (S.mode==='run'){
+    S.t += dt;
+    if (S.t>=FLASH1){ S.t=FLASH1; S.mode='filed'; act(); }
+    render();
+  } else if (AUTOPLAY && !RM && !inside && performance.now()-lastAct>4000){
+    S.mode='auto'; S.t=0; render();
+  }
+}
+function sync(){
+  const on = visible && !document.hidden;
+  if (on && !raf){ last = performance.now(); raf = requestAnimationFrame(tick); }
+  else if (!on && raf){ cancelAnimationFrame(raf); raf = 0; }
+}
+if ('IntersectionObserver' in window) new IntersectionObserver(es=>{ visible = es[es.length-1].isIntersecting; sync(); }).observe(stage);
+document.addEventListener('visibilitychange', sync);
+
+if (AUTOPLAY && !RM){ S.mode='auto'; S.t=1.2; }
+render();
+sync();
+window.__fig = { S, render, set(mode,t){ S.mode=mode; S.t=t; render(); } };
+</script>
+</body>
+</html>

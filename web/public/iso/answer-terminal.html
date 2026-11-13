@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fig 7 · Answer terminal</title>
+<style>
+/* light only: the figure ignores OS dark mode */
+:root{
+  color-scheme:light;
+  --page:#e9eaea; --panel:#f6f6f5;
+  --line:#70757b;  --detail:#b9bdc2;
+  --body:#fafafa;  --deck:#ffffff; --card:#ffffff;
+  --ink:#4b4f55;
+  --glass:#ffffff; --scr-ink:#4b4f55; --scr-dim:#a5a9af; --scr-hl:rgba(249,115,22,.16); --scr-on:#3a3d43;
+  --live:#F97316;
+  --cap:#5d6064;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--page);color:var(--ink);font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.plate{background:var(--panel);border-radius:18px;padding:22px 26px;width:min(100%,400px);
+  display:flex;flex-direction:column;gap:10px}
+.caps{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;color:var(--cap);letter-spacing:.14em}
+.caps .fig,.caps .out{text-transform:none;letter-spacing:.06em}
+.caps .name{text-transform:uppercase}
+.caps .out{color:var(--ink);margin-left:auto}
+.caps .out b{color:var(--live);font-weight:500}
+svg#stage{display:block;width:100%;height:auto;aspect-ratio:276/387;outline:none;overflow:visible;touch-action:manipulation}
+svg#stage:focus-visible{outline:1px dashed var(--detail);outline-offset:4px;border-radius:8px}
+
+/* bare: embeddable, no chrome */
+body.bare{background:transparent;padding:0;display:block}
+body.bare .plate{background:transparent;padding:0;width:100%;height:100%;border-radius:0;gap:0}
+body.bare .caps{display:none}
+body.bare svg#stage{width:100%;height:100%;aspect-ratio:auto}
+
+/* geometry */
+.face{fill:var(--body);stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.face.top{fill:var(--deck)}
+.face.glass{fill:var(--glass)}
+.detail{fill:none;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.cardbody .face{fill:var(--card)}
+.cardbody .face.top{fill:var(--card)}
+
+/* screen text */
+.scr text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;fill:var(--scr-ink)}
+.scr .dim{fill:var(--scr-dim)}
+.scr .hd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em}
+.scr .q{font-weight:500}
+.scr .hl rect{fill:var(--scr-hl);transition:fill 140ms ease-out}
+.scr .hl.on rect{fill:var(--live)}
+.scr .ans tspan{transition:fill 140ms ease-out}
+.scr .ans tspan.on{fill:var(--scr-on)}
+.scr .rule{stroke:var(--detail);opacity:.55;stroke-width:1;vector-effect:non-scaling-stroke}
+.caret{fill:var(--live);animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.led{fill:var(--detail)}
+body.sel .led{fill:var(--live)}
+.scr .ghost{fill:transparent}
+.scr .ans text,.scr .hl{transition:opacity 220ms ease-out}
+.scr .ans text.hide,.scr .hl.hide{opacity:0}
+
+/* cards */
+.card{cursor:pointer;transition:transform 140ms cubic-bezier(.3,1.4,.5,1)}
+.card .cardtext{fill:var(--ink);font:500 11px ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;pointer-events:none}
+.card .cardkind{fill:var(--cap);font:500 9px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;pointer-events:none;transition:fill 120ms}
+.card.sel .cardkind{fill:var(--live)}
+.card.sel{transform:translateY(-10px)}
+.card.sel .face{stroke:var(--live)}
+.card.down{transform:translateY(-13px);transition-duration:60ms}
+.hit{fill:transparent;cursor:pointer;stroke:none}
+.slot{fill:none;stroke:var(--detail);stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:2 2}
+@media (prefers-reduced-motion:reduce){
+  .card,.card.down,.scr .hl rect,.scr .ans tspan,.scr .ans text,.scr .hl{transition:none}
+  .caret{animation:none}
+}
+</style>
+</head>
+<body>
+<main class="plate">
+  <div class="caps"><span class="fig">Fig 7</span><span class="name">Answer terminal</span></div>
+  <svg id="stage" viewBox="12.0 18.5 251.2 352.2" role="img" tabindex="0"
+       aria-label="Isometric answer terminal showing a question and a sourced answer, with three source cards in a tray. Hover or press a card, or press keys 1, 2 or 3, to light the part of the answer it supports."></svg>
+  <div class="caps"><span class="ins">Hover or press 1 – 3</span><span class="out" id="readout">ask · 3 sources</span></div>
+</main>
+<script>
+const params = new URLSearchParams(location.search);
+if (params.get('bare') === '1') document.body.classList.add('bare');
+
+/* ---- kernel ---- */
+const C = Math.cos(Math.PI/6), S = Math.sin(Math.PI/6), OX = 84, OY = 220;
+const P = (x,y,z) => [(x-y)*C + OX, (x+y)*S - z + OY];
+const D = (x,y,z) => [(x-y)*C, (x+y)*S - z];
+const plane = (O,U,V) => { const o=P(...O), u=D(...U), v=D(...V);
+  return `matrix(${u[0]} ${u[1]} ${v[0]} ${v[1]} ${o[0]} ${o[1]})`; };
+const TOP   = (x,y,z) => plane([x,y,z],[1,0,0],[0,1,0]);
+const FRONT = (x,y,z) => plane([x,y,z],[1,0,0],[0,0,-1]);
+const SIDE  = (x,y,z) => plane([x,y,z],[0,-1,0],[0,0,-1]);
+const rect = (t,w,h,r=0,cls='face') =>
+  `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+const box = (x,y,z,w,d,h,r=0) =>
+  rect(SIDE(x+w,y+d,z+h), d,h,Math.min(r,h/4)) +
+  rect(FRONT(x,y+d,z+h), w,h,Math.min(r,h/4)) +
+  rect(TOP(x,y,z+h), w,d,r,'face top');
+
+/* ---- scene table ----
+ plate    (0,0,0)    196x72x6
+ foot     (50,6,6)   96x24x4      neck (80,8,10) 36x12x23
+ monitor  (8,6,18)   180x16x176   screen = FRONT face at y=22
+ tray     slab (6,28,6) 184x40x6 ; lips 8 high (front 12)
+ cards    staggered: x = 11,69,127  y = 38,44,50  d=5 h=58 w=60 */
+const MX=8, MY=6, MZ=33, MW=180, MD=16, MH=160;
+const TX=6, TY=28, TW=184, TD=40;
+const CW=60, CD=5, CH=54, CZ=12, CXS=[11,69,127], CYS=[38,44,50], LIFT=10;
+const CARDS = [
+  {kind:'drive',  lines:['Q2','Plan.pdf']},
+  {kind:'notion', lines:['Webinar','Playbook']},
+  {kind:'slack',  lines:['#marketing']},
+];
+
+const SW = MW-16, SH = 134; // glass size in face-local units
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function cardFace(i){
+  const c = CARDS[i];
+  const txt = c.lines.map((l,j)=>`<text class="cardtext" x="6" y="${35+j*14}">${esc(l)}</text>`).join('');
+  return `<g transform="${FRONT(CXS[i],CYS[i]+CD,CZ+CH)}">
+    <text class="cardkind" x="6" y="15">${c.kind}</text>
+    <path class="detail" d="M6 20.5 H${CW-6}"/>
+    ${txt}</g>`;
+}
+
+function build(){
+  let s = '';
+  s += box(0,0,0,196,72,6,8);
+  // desk detail: faint corner ticks
+  // monitor stand
+  s += box(50,6,6,96,24,4,3);
+  s += box(80,8,10,36,12,23,2);
+  // monitor body
+  s += box(MX,MY,MZ,MW,MD,MH,6);
+  // screen face
+  s += `<g transform="${FRONT(MX,MY+MD,MZ+MH)}">
+    <rect class="face glass" x="8" y="7" width="${SW}" height="${SH}" rx="6"/>
+    <g class="scr">
+      <text class="q" id="q0" x="16" y="27" font-size="13.4"><tspan id="q0a"></tspan><tspan id="q0b" class="ghost"></tspan></text>
+      <text class="q" id="q1" x="16" y="43" font-size="13.4"><tspan id="q1a"></tspan><tspan id="q1b" class="ghost"></tspan></text>
+      <path class="rule" d="M16 52 H${8+SW-8}"/>
+      <g id="bars"></g>
+      <g class="ans">
+        <text x="16" y="73"  font-size="11" id="l0">Q2 came down to three bets:</text>
+        <text x="16" y="91"  font-size="11" id="l1">doubling down on <tspan id="p0">paid search</tspan>,</text>
+        <text x="16" y="109" font-size="11" id="l2">launching <tspan id="p1">partner webinars</tspan>,</text>
+        <text x="16" y="127" font-size="11" id="l3">lifting <tspan id="p2">qualified leads by 40%</tspan>.</text>
+      </g>
+      <rect class="caret" id="caret" x="0" y="0" width="5" height="10"/>
+    </g>
+    <circle class="led" cx="${MW-18}" cy="${MH-10}" r="2.4"/>
+    <path class="detail" d="M16 ${MH-10} H44 M50 ${MH-10} H58"/>
+  </g>`;
+  // tray: back + left lips, slab, slots
+  s += box(TX,TY,6,TW,TD,6,3);
+  s += box(TX,TY,12,TW,4,8,1.5);
+  s += box(TX,TY,12,4,TD,8,1.5);
+  CXS.forEach(x=>{ s += `<g transform="${TOP(x-2,CYS[CXS.indexOf(x)]-3,CZ)}"><rect class="slot" width="${CW+4}" height="${CD+6}" rx="1.5"/></g>`; });
+  // cards
+  CARDS.forEach((c,i)=>{
+    s += `<g class="card" data-i="${i}"><g class="cardbody">${box(CXS[i],CYS[i],CZ,CW,CD,CH,3)}</g>${cardFace(i)}</g>`;
+  });
+  // front + right lips
+  s += box(TX,TY+TD-4,12,TW,4,12,1.5);
+  s += box(TX+TW-4,TY,12,4,TD,8,1.5);
+  // hit areas, last so they win the pointer
+  CARDS.forEach((c,i)=>{
+    s += `<g transform="${FRONT(CXS[i]-2,CYS[i]+CD+0.5,CZ+CH+LIFT+4)}"><rect class="hit" data-i="${i}" x="0" y="0" width="${CW+4}" height="${CH+LIFT+4}"/></g>`;
+  });
+  return s;
+}
+
+const stage = document.getElementById('stage');
+stage.innerHTML = build();
+const ro = document.getElementById('readout');
+const cards = [...stage.querySelectorAll('.card')];
+const hits = [...stage.querySelectorAll('.hit')];
+const names = ['drive','notion','slack'];
+
+/* ---- state ----
+ hover/pin come from the user; auto from the autoplay scheduler; q/a are how much of the
+ question (chars) and answer (lines) is on screen. render() is the only thing that touches the DOM. */
+const QL = ['What was our','Q2 strategy?'], QLEN = QL[0].length + 1 + QL[1].length;
+const state = { pin:null, hover:null, auto:null, q:QLEN, a:4 };
+const shown = () => state.hover ?? state.pin ?? state.auto;
+
+const phr = [0,1,2].map(i=>document.getElementById('p'+i));
+const ansEls = [0,1,2,3].map(i=>document.getElementById('l'+i));
+const q0a = document.getElementById('q0a'), q0b = document.getElementById('q0b'), q1a = document.getElementById('q1a'), q1b = document.getElementById('q1b');
+const q0 = document.getElementById('q0'), q1 = document.getElementById('q1');
+const caret = document.getElementById('caret');
+const baselines = [27,43,73,91,109,127];
+let barEls = [];
+
+function fitScreen(){
+  const maxw = SW - 16 - 6; let f = 11.6;
+  ansEls.slice(0,4).forEach(t=>t.style.fontSize='11.6px');
+  ansEls.slice(0,4).forEach(t=>{ const w = t.getComputedTextLength(); if (w > maxw) f = Math.min(f, 11.6*maxw/w); });
+  ansEls.slice(0,4).forEach(t=>t.style.fontSize = f.toFixed(2)+'px');
+}
+function measure(){
+  fitScreen();
+  const g = document.getElementById('bars'); g.innerHTML = ''; barEls = [];
+  const ys = [91,109,127];
+  phr.forEach((p,i)=>{
+    const t = ansEls[i+1], txt = t.textContent, ph = p.textContent, a = txt.indexOf(ph), b = a+ph.length-1;
+    const x0 = t.getStartPositionOfChar(a).x, x1 = t.getEndPositionOfChar(b).x;
+    const el = document.createElementNS('http://www.w3.org/2000/svg','g');
+    el.setAttribute('class','hl');
+    el.innerHTML = `<rect x="${x0-3}" y="${ys[i]-11.5}" width="${x1-x0+6}" height="16" rx="3"/>`;
+    g.appendChild(el); barEls.push(el);
+  });
+  fitCards();
+  render();
+}
+function fitCards(){
+  const tx = [...stage.querySelectorAll('.cardtext')]; tx.forEach(t=>t.style.fontSize='');
+  const maxw = CW-12; let f = 11.5;
+  tx.forEach(t=>{ const w = t.getComputedTextLength(); if (w > maxw) f = Math.min(f, parseFloat(getComputedStyle(t).fontSize)*maxw/w); });
+  tx.forEach(t=>t.style.fontSize = Math.min(f,11.5).toFixed(2)+'px');
+}
+
+let lastQ = -1;
+function render(){
+  const k = shown();
+  cards.forEach((c,i)=>c.classList.toggle('sel', k===i));
+  barEls.forEach((b,i)=>{ b.classList.toggle('on', k===i); b.classList.toggle('hide', state.a < i+2); });
+  phr.forEach((p,i)=>p.classList.toggle('on', k===i));
+  ansEls.forEach((l,i)=>l.classList.toggle('hide', state.a < i+1));
+  document.body.classList.toggle('sel', k!==null);
+  ro.innerHTML = k===null ? 'ask · 3 sources' : `source ${k+1} · <b>${names[k]}</b>`;
+  if (state.q !== lastQ){
+    const n = state.q, n0 = Math.min(n, QL[0].length), n1 = Math.max(0, n - QL[0].length - 1);
+    q0a.textContent = QL[0].slice(0,n0); q0b.textContent = QL[0].slice(n0);
+    q1a.textContent = QL[1].slice(0,n1); q1b.textContent = QL[1].slice(n1);
+    lastQ = n;
+  }
+  // caret sits at the end of whatever has been written last
+  let el, y, n;
+  if (state.q < QLEN || state.a === 0){
+    const n0 = QL[0].length;
+    if (state.q <= n0){ el = q0; y = baselines[0]; n = state.q - 1; } else { el = q1; y = baselines[1]; n = state.q - n0 - 2; }
+    if (n < 0){ el = q0; y = baselines[0]; n = -1; }
+  } else { el = ansEls[state.a-1]; y = baselines[state.a+1]; n = el.textContent.length - 1; }
+  try { caret.setAttribute('x', n < 0 ? 16 : el.getEndPositionOfChar(n).x + 3); caret.setAttribute('y', y-9); } catch(e){}
+}
+
+/* ---- autoplay scheduler (the only place timers drive the figure) ---- */
+const reducedMQ = matchMedia('(prefers-reduced-motion: reduce)');
+const autoEnabled = params.get('autoplay') !== '0';
+let running = false, autoTimer = null, visible = true, tabVisible = !document.hidden;
+let userActive = false, idleTimer = null, inside = false;
+
+function autoOK(){ return autoEnabled && !reducedMQ.matches && visible && tabVisible && !userActive; }
+function buildPlan(){
+  const steps = []; let at = 0;
+  const add = (dt, fn) => { at += dt; steps.push([at, fn]); };
+  add(0,   () => { state.q=0; state.a=0; state.auto=null; render(); });
+  add(550, () => {});
+  for (let n=1; n<=QLEN; n++) add(52, () => { state.q=n; render(); });
+  for (let a=1; a<=4; a++)    add(a===1?380:480, () => { state.a=a; render(); });
+  [0,1,2].forEach((k,j)=> add(j===0?620:1250, () => { state.auto=k; bump(k); render(); }));
+  add(1250, () => { state.auto=null; render(); });
+  add(1400, () => {});
+  return steps;
+}
+function startAuto(){
+  if (running) return; running = true;
+  let steps = buildPlan(), idx = 0, t0 = performance.now();
+  const tick = () => {
+    if (!running) return;
+    if (idx >= steps.length){ steps = buildPlan(); idx = 0; t0 = performance.now(); }
+    const [t, fn] = steps[idx];
+    autoTimer = setTimeout(() => { if (!running) return; fn(); idx++; tick(); }, Math.max(0, t - (performance.now()-t0)));
+  };
+  tick();
+}
+function stopAuto(){
+  clearTimeout(autoTimer); autoTimer = null;
+  const was = running; running = false;
+  if (was || state.q!==QLEN || state.a!==4 || state.auto!==null){ state.q = QLEN; state.a = 4; state.auto = null; render(); }
+}
+function maybeStart(){ if (autoOK() && !running) startAuto(); }
+function touched(){            // any user input
+  stopAuto(); userActive = true;
+  clearTimeout(idleTimer); idleTimer = setTimeout(idleCheck, 4000);
+}
+function idleCheck(){
+  if (inside){ idleTimer = setTimeout(idleCheck, 1000); return; }
+  userActive = false; state.pin = null; state.hover = null; render(); maybeStart();
+}
+
+/* ---- input ---- */
+function bump(i){ const c = cards[i]; c.classList.add('down'); setTimeout(()=>c.classList.remove('down'),120); }
+function pin(i){ state.pin = (state.pin===i) ? null : i; if(state.pin!==null) bump(i); render(); }
+
+stage.addEventListener('pointerenter', ()=>{ inside = true; touched(); });
+stage.addEventListener('pointerleave', ()=>{ inside = false; touched(); });
+stage.addEventListener('pointermove', touched);
+stage.addEventListener('pointerdown', touched);
+hits.forEach(h=>{
+  const i = +h.dataset.i;
+  h.addEventListener('pointerenter', e=>{ if(e.pointerType==='touch') return; state.hover = i; render(); });
+  h.addEventListener('pointerleave', e=>{ if(e.pointerType==='touch') return; if(state.hover===i){ state.hover = null; render(); } });
+  h.addEventListener('click', ()=>{ touched(); state.hover = null; pin(i); });
+});
+stage.addEventListener('click', e=>{ if(!e.target.closest('.hit') && state.pin!==null){ state.pin=null; render(); } });
+window.addEventListener('keydown', e=>{
+  if (e.metaKey||e.ctrlKey||e.altKey) return;
+  if (e.key==='1'||e.key==='2'||e.key==='3'){ touched(); state.hover=null; const i=+e.key-1; state.pin=i; bump(i); render(); e.preventDefault(); }
+  else if (e.key==='Escape'||e.key==='0'){ touched(); state.pin=null; state.hover=null; render(); }
+});
+window.addEventListener('blur', ()=>{ state.hover=null; render(); });
+
+/* pause when offscreen, hidden, or reduced-motion */
+if ('IntersectionObserver' in window) new IntersectionObserver(es=>{
+  visible = es[es.length-1].isIntersecting; visible ? maybeStart() : stopAuto();
+}).observe(stage);
+document.addEventListener('visibilitychange', ()=>{ tabVisible = !document.hidden; tabVisible ? maybeStart() : stopAuto(); });
+reducedMQ.addEventListener && reducedMQ.addEventListener('change', ()=> reducedMQ.matches ? stopAuto() : maybeStart());
+
+measure();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+maybeStart();
+window.__state = state;
+</script>
+</body>
+</html>
