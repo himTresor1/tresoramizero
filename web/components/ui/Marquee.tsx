@@ -4,7 +4,7 @@ import { type CSSProperties, type ReactNode } from "react";
 
 /**
  * Infinite horizontal ticker. Renders the item 2 × `copies` times and slides the track by exactly
- * one set, so the loop is seamless. `pxPerSec` is measured per use (hero name: 70 px/s).
+ * one set, so the loop is seamless. `pxPerSec` is set per use (hero name: 70 px/s).
  * `item(i)` lets the first copy carry the real element (an h1) while the rest stay decorative.
  */
 export function Marquee({

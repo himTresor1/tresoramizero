@@ -1,6 +1,6 @@
 /**
- * The template's icons are Phosphor (regular weight, 256 viewBox): the paths below are the ones it
- * renders. One set, one size step (24px) unless a size is given.
+ * Icons are Phosphor (regular weight, 256 viewBox). One set, one size step (24px) unless a size
+ * is given.
  */
 const paths = {
   linkedin:
@@ -11,7 +11,7 @@ const paths = {
     "M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM176,24H80A56.06,56.06,0,0,0,24,80v96a56.06,56.06,0,0,0,56,56h96a56.06,56.06,0,0,0,56-56V80A56.06,56.06,0,0,0,176,24Zm40,152a40,40,0,0,1-40,40H80a40,40,0,0,1-40-40V80A40,40,0,0,1,80,40h96a40,40,0,0,1,40,40ZM192,76a12,12,0,1,1-12-12A12,12,0,0,1,192,76Z",
   arrowUp:
     "M205.66,117.66a8,8,0,0,1-11.32,0L136,59.31V216a8,8,0,0,1-16,0V59.31L61.66,117.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,205.66,117.66Z",
-  /* Phosphor "Globe" is not in the template; Dribbble / Behance / X use the same regular stroke so
+  /* Dribbble / Behance / X use the same regular stroke so
      Tresor's real handles can be added here without a second icon set. */
 } as const;
 

@@ -7,10 +7,10 @@ import { Reveal } from "@/components/motion/Reveal";
 import { StickyNumber } from "@/components/sections/StickyNumber";
 
 /**
- * "// Facts" (measured): label row, 40px, then a row (gap 40) of the sticky outlined number
+ * "// Facts": label row, 40px, then a row (gap 40) of the sticky outlined number
  * (475×352) and a 925px card column (x 515) whose blocks (x 561, 832 wide, padding 160 0,
  * gap 64) hold a 72px title and a body paragraph, separated by 1px lines; 306px spacer at the end.
- * The number shows each block's own figure (the template counts 90 / years / awards).
+ * The number shows each block's own figure.
  */
 export function Facts() {
   const [active, setActive] = useState(0);

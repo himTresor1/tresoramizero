@@ -4,7 +4,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/motion/Reveal";
 
 /**
- * "// Old projects" (measured): rule + label row, 80px, then 66px rows (padding 20): name (18px
+ * "// Old projects": rule + label row, 80px, then 66px rows (padding 20): name (18px
  * 600) · year (DM Mono, 24px after the name) · category at the half-way column · index (DM Mono)
  * · 24px arrow. Rows are links when a URL exists.
  */

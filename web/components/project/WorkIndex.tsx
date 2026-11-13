@@ -7,10 +7,10 @@ import type { Project } from "@/content/projects";
 import { media } from "@/content/media";
 
 /**
- * Sticky horizontal scroll (measured on /projects): a 100vh sticky viewport inside a tall section;
- * the card track (n × 1280px) slides left as the section scrolls. The template's section is
- * n × 450px tall for 8 cards; with fewer cards that leaves no travel, so the height is the larger
- * of that and 100vh + the track overflow × 0.31 (the template's px-per-px ratio).
+ * Sticky horizontal scroll: a 100vh sticky viewport inside a tall section;
+ * the card track (n × 1280px) slides left as the section scrolls. The section's base height is
+ * n × 450px; with few cards that leaves no travel, so the height is the larger
+ * of that and 100vh + the track overflow × 0.31 (the px-per-px scroll ratio).
  * Cards: 1280×900 slots (padding 60 20 20) → 1240×820 white panels (padding 12, radius 20),
  * image 778×796 (radius 16) + text column 428 (padding 32).
  */

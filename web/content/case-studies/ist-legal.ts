@@ -1,8 +1,8 @@
 import type { CaseStudy } from "./types";
 
 /**
- * IST Legal — a short case study. Facts come from the ist-legal-landing repo (docs/brief.md,
- * docs/design-rationale.md, docs/evidence-ledger.md, docs/hackathon-feedback.md, git log).
+ * IST Legal — a short case study. Facts come from the project's own brief, design rationale,
+ * evidence ledger, hackathon feedback and git history.
  */
 export const istLegalCaseStudy: CaseStudy = {
   slug: "ist-legal",

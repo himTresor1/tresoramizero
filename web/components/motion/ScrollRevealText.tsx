@@ -5,9 +5,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { BP } from "@/lib/motion";
 
 /**
- * Per-character colour reveal scrubbed by scroll: the template's text component (props read from
- * its React tree: `useScrollColor`, `scrollColor` = faint, `defaultColor` = ink, `primaryColor` =
- * accent over a start/end index, `startOffset` "start 0.75", `endOffset` "start 0.35"). Every
+ * Per-character colour reveal scrubbed by scroll (start offset 0.75, end offset 0.35). Every
  * character starts faint and turns ink — or accent inside the *asterisk* range — linearly as the
  * element's top travels from 75% to 35% of the viewport.
  */
@@ -25,7 +23,7 @@ export function ScrollRevealText({
   className?: string;
   start?: number;
   end?: number;
-  /** leading nbsp count (the template indents the first line with spaces) */
+  /** leading nbsp count (the first line is indented with spaces) */
   indent?: number;
   /** leading nbsp count under the desktop breakpoint */
   indentSmall?: number;
@@ -65,7 +63,7 @@ export function ScrollRevealText({
 
 function parse(text: string, indent: number) {
   const out: { ch: string; accent: boolean }[] = [];
-  // plain spaces (the element is `white-space: pre-wrap`), as the template does: an nbsp falls back
+  // plain spaces (the element is `white-space: pre-wrap`): an nbsp falls back
   // to another font's glyph in Inter Display and grows every line box by a few px
   for (let i = 0; i < indent; i++) out.push({ ch: " ", accent: false });
   let accent = false;

@@ -10,10 +10,16 @@ import { Facts } from "@/components/about/Facts";
 import { ExperienceRows } from "@/components/about/ExperienceRows";
 import { Trust } from "@/components/sections/Trust";
 
-export const metadata: Metadata = { title: "About", description: profile.meta.description };
+const aboutDescription = `About ${profile.fullName}: product designer in ${profile.location}, trained at Rwanda Coding Academy, with work for the Development Bank of Rwanda, IST Africa, O2Labbs, MININFRA and the Rwanda TVET Board.`;
+export const metadata: Metadata = {
+  title: `About ${profile.fullName} — Product Designer`,
+  description: aboutDescription,
+  alternates: { canonical: "/about" },
+  openGraph: { title: `About ${profile.fullName}`, description: aboutDescription, url: "/about", type: "profile", firstName: profile.firstName, lastName: profile.lastName },
+};
 
 /**
- * /about (measured on the template): hero (padding 320 20 160, gap 80) with a 64×96 portrait
+ * /about: hero (padding 320 20 160, gap 80) with a 64×96 portrait
  * beside the 72px lead and a three-column row (two paragraphs + "Let's Talk"); a 900px image
  * frame (image 1080 tall, −180); "// Recognition and Awards" rows (66px) — here "// Experience";
  * a dark 900px quote on a dimmed image (text 764 wide centred, 72px white reveal); "// Facts"

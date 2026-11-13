@@ -3,7 +3,7 @@
 @import "../styles/tokens.css";
 
 /* Tailwind theme bridges to the semantic tokens in styles/tokens.css. Components use these
-   names only, never raw colours. Breakpoints are the template's (docs/forensics.md). */
+   names only, never raw colours. Breakpoints: 810 (tablet) and 1200 (desktop). */
 @theme inline {
   --font-sans: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Inter Display", "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
@@ -46,7 +46,7 @@
   }
   body {
     margin: 0;
-    /* the template's body is the accent: visible for a frame on overscroll, exactly like the original */
+    /* the body is the accent: visible for a frame on overscroll */
     background: var(--accent);
     font-family: var(--font-display);
     font-size: 18px;
@@ -94,8 +94,8 @@
 }
 
 @layer components {
-  /* Type roles, measured (docs/forensics.md §Typography). Desktop values; tablet/mobile overrides
-     are added per section from the capture's breakpoint variants. */
+  /* Type roles. Desktop values; tablet/mobile overrides
+     are added per section. */
   .t-marquee { font-family: var(--font-display); font-weight: 500; font-size: 280px; line-height: 220px; letter-spacing: -0.04em; color: var(--on-dark); white-space: nowrap; }
   .t-role    { font-family: var(--font-display); font-weight: 600; font-size: 64px; line-height: 64px; letter-spacing: -0.033em; }
   .t-h2      { font-family: var(--font-display); font-weight: 600; font-size: 72px; line-height: 72px; letter-spacing: -0.03em; }
@@ -111,9 +111,9 @@
   .section-label { display: flex; align-items: baseline; gap: 12px; padding-left: var(--gutter); }
   @media (max-width: 1199px) { .section-label { padding-left: 16px; } }
 
-  /* Content column: the template keeps every section's content inside a 1440px container
+  /* Content column: every section's content sits inside a 1440px container
      (1400px + 20px gutters) centred on wide screens, while backgrounds and photos stay full-bleed.
-     At 1440 and below this is a no-op (the gutters are the 20px measured everywhere). */
+     At 1440 and below this is a no-op (the gutters are 20px everywhere). */
   .wrap { max-width: 1440px; margin-left: auto; margin-right: auto; }
   .nav-desktop, .intro-head, .intro-body, .services-content, .projects-head, .project-card, .testimonials-body, .testimonials-stack,
   .work-hero, .archive-rows, .about-hero, .about-exp .intro-head, .facts-content, .contact, .project-overview-row, .more-grid, .more-projects .intro-head, .footer-inner {
@@ -130,14 +130,14 @@
   .tap { position: relative; }
   .tap::after { content: ""; position: absolute; inset: -12px -8px; }
 
-  /* nav (measured): white + exclusion blend on desktop so it reads on any section */
+  /* nav: white + exclusion blend on desktop so it reads on any section */
   .nav-blend { mix-blend-mode: exclusion; }
   .nav-plain .nav-wordmark-small, .nav-plain .nav-toggle-line { color: var(--ink); background-color: var(--ink); }
   .nav-plain .nav-wordmark-small { background: none; }
   .nav-plain .nav-toggle[data-open] .nav-toggle-line { background-color: var(--on-dark); }
   .nav-link { position: relative; display: inline-block; }
-  /* under 1200px the template paints ink text; white + exclusion over a light page gives the same ink,
-     and turns white over the open (dark) menu panel, exactly as the template does */
+  /* under 1200px the text reads as ink: white + exclusion over a light page gives ink,
+     and turns white over the open (dark) menu panel */
   .nav-wordmark-small { font-family: var(--font-display); font-weight: 400; font-size: 16px; line-height: 22.4px; color: var(--on-dark); }
   .nav-toggle { position: relative; width: 40px; height: 40px; }
   .nav-toggle::after { content: ""; position: absolute; inset: -4px; }
@@ -148,18 +148,18 @@
   .nav-toggle[data-open] .nav-toggle-line:nth-child(1) { transform: rotate(-45deg); }
   .nav-toggle[data-open] .nav-toggle-line:nth-child(2) { transform: rotate(45deg); }
 
-  /* hero (measured at 1440 / 768 / 390) */
-  /* M13: the template lays a WebGL blue-noise grain over the hero photo (mix-blend overlay). A
-     static SVG turbulence tile at low opacity gives the same texture without a shader. */
+  /* hero (at 1440 / 768 / 390) */
+  /* a blue-noise grain over the hero photo (mix-blend overlay): a
+     static SVG turbulence tile at low opacity gives the texture without a shader. */
   .hero-grain { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: 0.32; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>"); background-size: 160px 160px; }
   .hero { height: 100vh; min-height: 720px; }
   .hero-name { top: 37.8%; mix-blend-mode: exclusion; }
   .hero-name-track { --marquee-gap: 24px; }
   .hero-name-text { display: block; white-space: nowrap; }
   .hero-socials { left: 16px; bottom: 48px; mix-blend-mode: exclusion; }
-  /* measured: the role lines are left-aligned in a block whose right edge sits 28px from the viewport */
+  /* the role lines are left-aligned in a block whose right edge sits 28px from the viewport */
   .hero-roles { right: 28px; bottom: 48px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left; mix-blend-mode: exclusion; }
-  /* measured at 768 (hero 983 = 96vh, name text top 452) and 390 (hero 810, name text top 362) */
+  /* at 768 (hero 983 = 96vh, name text top 452) and 390 (hero 810, name text top 362) */
   @media (max-width: 1199px) {
     .hero { height: 96vh; min-height: 0; }
     .hero-name { top: 46%; }
@@ -173,9 +173,9 @@
     .hero-name { top: 44.7%; }
   }
 
-  /* intro (measured at 1440 / 768 / 390) */
+  /* intro (at 1440 / 768 / 390) */
   .t-lead { font-family: var(--font-display); font-weight: 600; font-size: 72px; line-height: 74px; letter-spacing: -0.04em; white-space: pre-wrap; }
-  /* the label row sits in a sticky wrapper in the template: it stays at the top of its section */
+  /* the label row sits in a sticky wrapper: it stays at the top of its section */
   .intro-head { position: sticky; top: 0; z-index: 2; height: 48px; padding-top: 12px; }
   .intro-body { display: flex; flex-direction: column; gap: 60px; padding: 120px 20px 120px; }
   .intro-lead { width: 1200px; max-width: 100%; margin: 0 auto; text-align: left; }
@@ -192,7 +192,7 @@
     .intro-copy { font-size: 14px; line-height: 19.6px; }
   }
 
-  /* services (measured at 1440) */
+  /* services (at 1440) */
   .services-content { display: flex; gap: 32px; margin-top: 40px; padding: 20px; align-items: flex-start; }
   .services-number-col { flex: 0 0 462px; align-self: stretch; }
   .services-number { position: sticky; top: 96px; width: 462px; height: 342px; overflow: hidden; }
@@ -204,7 +204,7 @@
   .services-rows { display: flex; flex-direction: column; }
   .services-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 58px; padding: 0 24px; border-top: 1px solid var(--grey-light); }
   .services-row:last-child { border-bottom: 1px solid var(--grey-light); }
-  /* under 1200px (parity-checked at 390): content flush at 16px, title 32px, desc 14px, rows 52px */
+  /* under 1200px (at 390): content flush at 16px, title 32px, desc 14px, rows 52px */
   @media (max-width: 1199px) {
     .services-content { flex-direction: column; gap: 32px; margin-top: 32px; padding: 20px 16px 80px; }
     .services-number-col { display: none; }
@@ -216,7 +216,7 @@
     .services-row { height: 52px; padding: 0; }
   }
 
-  /* projects (measured at 1440) */
+  /* projects (at 1440) */
   .projects-head { height: 49px; padding-top: 13px; position: sticky; top: 0; z-index: 2; }
   .projects-stack { display: flex; flex-direction: column; gap: 200px; padding: 60px 0 120px; }
   /* each slot sticks at the top of the stack; later slots scroll over the earlier ones */
@@ -232,7 +232,7 @@
   .project-summary { max-width: 396px; }
   .project-tags { display: flex; flex-direction: column; gap: 8px; }
   .project-tags li + li { padding-top: 8px; border-top: 1px solid var(--grey-light); }
-  /* under 1200px (measured at 390): 4px side margin, image on top (358×539), text below (padding
+  /* under 1200px (at 390): 4px side margin, image on top (358×539), text below (padding
      16, gap 24), 24px title, 14px tags with 4px gaps */
   @media (max-width: 1199px) {
     .projects-stack { gap: 200px; padding: 60px 0 120px; }
@@ -250,7 +250,7 @@
     .project-tags li + li { padding-top: 5px; }
   }
 
-  /* testimonials (measured at 1440) */
+  /* testimonials (at 1440) */
   .t-quote { font-family: var(--font-display); font-weight: 600; font-size: 72px; line-height: 74px; letter-spacing: -0.03em; white-space: pre-wrap; }
   .testimonials-body { position: relative; display: flex; gap: 32px; margin-top: 40px; padding: 96px 20px; }
   .testimonials-text { position: relative; display: flex; flex-direction: column; gap: 48px; width: 920px; max-width: 100%; margin-left: 240px; }
@@ -272,14 +272,14 @@
     .testimonials-author .t-body { font-size: 14px; line-height: 19.6px; }
   }
 
-  /* trust strip (measured): 96px, 60px items, 32px gap */
+  /* trust strip: 96px, 60px items, 32px gap */
   .trust { height: 96px; display: flex; align-items: center; overflow: hidden; }
   .trust-track { --marquee-gap: 32px; }
   .trust-list { display: flex; gap: 32px; }
   .trust-item { display: flex; align-items: center; height: 60px; padding: 0 9px; white-space: nowrap; }
   .trust-mark { font-family: var(--font-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; color: var(--ink); opacity: 0.85; }
 
-  /* footer (measured): fixed layer under main, revealed by a 100vh spacer */
+  /* footer: fixed layer under main, revealed by a 100vh spacer */
   .footer-spacer { height: 100vh; }
   .footer-layer { position: fixed; inset: 0; z-index: 1; }
   .footer { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--page-deep); color: var(--on-dark); }
@@ -292,7 +292,7 @@
   .footer-socials { position: absolute; left: 20px; bottom: 20px; display: flex; gap: 24px; mix-blend-mode: exclusion; }
   .footer-top { position: absolute; right: 20px; top: 20px; width: 44px; height: 44px; border-radius: 48px; background: #fff; color: #121111; display: flex; align-items: center; justify-content: center; transition: transform 0.4s var(--ease-reveal); }
   .footer-top:hover { transform: translateY(-2px); }
-  /* under 1200px (measured at 390): marquee row at 272px (text 120px), details block padding 12 with
+  /* under 1200px (at 390): marquee row at 272px (text 120px), details block padding 12 with
      16px lines 4px apart, socials row at bottom 12 with 24px gaps, back-to-top at (right 16, top 16) */
   @media (max-width: 1199px) {
     .footer-marquee { top: 46%; }
@@ -310,7 +310,7 @@
     .footer-marquee { top: 42.9%; }
   }
 
-  /* project page (measured on /projects/formula-vintage at 1440) */
+  /* project page (at 1440) */
   .project-hero { position: relative; height: 100vh; min-height: 640px; overflow: hidden; background: var(--card); }
   .project-hero-image { position: absolute; inset: -32px; }
   .project-hero-image img { width: 100%; height: 100%; object-fit: cover; }
@@ -358,7 +358,7 @@
     .t-more-title { font-size: 28px; line-height: 30px; }
   }
 
-  /* /projects (measured at 1440) */
+  /* /projects (at 1440) */
   .work-hero { padding: 320px 20px 20px; background: var(--page); }
   .work-index { position: relative; }
   .work-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; }
@@ -408,8 +408,8 @@
     .exp-row .exp-col { flex: 1 1 100%; }
   }
 
-  /* /about (measured at 1440) */
-  /* the template pulls the about/contact sections 70px up under the nav */
+  /* /about (at 1440) */
+  /* the about/contact sections are pulled 70px up under the nav */
   .about-hero { display: flex; flex-direction: column; gap: 80px; margin-top: -70px; padding: 320px 20px 160px; background: var(--page); }
   .about-lead-row { position: relative; }
   .about-portrait { position: absolute; left: 0; top: -42px; width: 64px; height: 96px; overflow: hidden; border-radius: 8px; }
@@ -457,7 +457,7 @@
     .facts-spacer { height: 40px; }
   }
 
-  /* /contact (measured at 1440) */
+  /* /contact (at 1440) */
   .contact { display: flex; gap: 76px; margin-top: -70px; padding: 180px 20px 40px; background: var(--page); min-height: 100vh; }
   .contact-headline { flex: 0 0 462px; }
   .contact-col { flex: 1 1 0; display: flex; flex-direction: column; gap: 40px; padding-top: 200px; }
@@ -488,7 +488,7 @@
     .contact-socials { flex-wrap: wrap; gap: 16px 20px; }
   }
 
-  /* case study — the template's type and spacing, laid out like a long-form study */
+  /* case study — the site's type and spacing, laid out like a long-form study */
   .case { background: var(--page); }
   .case-head { display: flex; flex-direction: column; gap: 64px; max-width: 1440px; margin: 0 auto; padding: 320px 20px 96px; }
   .case-head-row { display: flex; gap: 12px; }
@@ -757,7 +757,7 @@
     .sfig-run-badge { display: none; }
   }
 
-  /* pill button (measured): 184×65, padding 20px 40px, radius 56; hover grows an accent circle
+  /* pill button: 184×65, padding 20px 40px, radius 56; hover grows an accent circle
      from the bottom centre and slides the label up 35px to its white copy */
   .pill { position: relative; display: inline-flex; overflow: hidden; padding: 20px 40px; border-radius: 56px; background: var(--card); box-shadow: inset 0 0 0 1px var(--grey-light); color: var(--grey); isolation: isolate; }
   .pill-circle { position: absolute; left: 50%; top: 100%; width: 1px; height: 1px; border-radius: 50%; background: var(--accent); transform: translate(-50%, -50%) scale(1); transition: transform 0.65s var(--ease-reveal); z-index: 0; }

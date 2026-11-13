@@ -5,7 +5,7 @@ import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Reveal } from "@/components/motion/Reveal";
 
 /**
- * "// More Projects" (measured): rule + label row, 48px gap, then a 3-column grid of 480×636
+ * "// More Projects": rule + label row, 48px gap, then a 3-column grid of 480×636
  * cards with no gap: white panel (padding 12, radius 20), image 456×496 (radius 16), text block
  * (padding 16): h3 40px/40 −0.033em, then the year in DM Mono.
  */

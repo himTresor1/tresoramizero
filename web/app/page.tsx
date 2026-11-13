@@ -11,7 +11,7 @@ export default function Home() {
       <Intro />
       <Projects />
       <Services />
-      {/* Testimonials are hidden until real quotes exist (PLAN.md Q1); see content/testimonials.ts */}
+      {/* Testimonials are hidden until real quotes exist; see content/testimonials.ts */}
       <Trust />
     </>
   );

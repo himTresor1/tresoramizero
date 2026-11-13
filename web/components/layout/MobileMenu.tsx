@@ -6,7 +6,7 @@ import { navLinks } from "./Nav";
 import { reveal } from "@/lib/motion";
 
 /**
- * Menu under 1200px, measured on the template at 390: the nav grows to 250px, its background
+ * Menu under 1200px (at 390): the nav grows to 250px, its background
  * becomes ink-deep, the toggle turns into an X (two 18×18 lines at ±45°) and the three links sit at
  * x=16, y=85/139/193 (54px pitch), 16px/22.4 Inter Display 400, white. The page is not locked.
  */

@@ -6,12 +6,12 @@ import { SectionLabel } from "@/components/ui/SectionLabel";
 import { ProjectCard } from "./ProjectCard";
 
 /**
- * "// Projects" (measured): the template paints this section ink-deep; here it stays on the page
- * colour like its neighbours (Tresor's call), with a hairline on the cards. Sticky label row, 60px top padding, one 900px
+ * "// Projects": the section stays on the page
+ * colour like its neighbours, with a hairline on the cards. Sticky label row, 60px top padding, one 900px
  * sticky slot per card (top 0) with 200px between slots, 120px bottom padding. Each card is a
  * white 1400×820 panel (padding 12, radius 20): image 881×796 (radius 16) + text column (485,
  * padding 32). As the next card slides over, the card behind scales 1 → 0.9 and fades 1 → 0 across
- * exactly one viewport of scroll (motion-probe, M7).
+ * exactly one viewport of scroll.
  */
 export function Projects() {
   const ref = useRef<HTMLDivElement>(null);

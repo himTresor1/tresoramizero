@@ -1,6 +1,6 @@
 # Tresor Amizero — portfolio site
 
-Next.js 16 · Tailwind 4 · motion · Lenis. A clean rebuild of the TD_Alexfolio Framer template's layout and motion, filled with Tresor's own content. Measurements and motion values come from `../docs/forensics.md`; nothing is invented.
+Next.js 16 · Tailwind 4 · motion · Lenis. The portfolio site for Tresor Amizero: a scroll-driven layout with its own motion system, filled with Tresor's content.
 
 ## Run
 
@@ -27,11 +27,11 @@ The form on `/contact` posts to [Web3Forms](https://web3forms.com), which emails
 | Every image (with `placeholder: true` where a stand-in is used) | `content/media.ts` → files in `public/media/` |
 | Design tokens (light + dark) | `styles/tokens.css` |
 | Type roles and all component styles | `app/globals.css` |
-| Measured motion values | `lib/motion.ts` |
+| Motion values | `lib/motion.ts` |
 
 ## Swapping images
 
-Replace the file in `public/media/` (keep the path, or edit the `src` in `content/media.ts`) and remove `placeholder: true`. Sizes that match the template's crops:
+Replace the file in `public/media/` (keep the path, or edit the `src` in `content/media.ts`) and remove `placeholder: true`. Sizes the layout expects:
 
 - `hero` 1440×900 (desktop, `object-position: 50% 100%`), `heroMobile` 780×1620 (under 810px)
 - `footer` 1440×900 (5% overscan is applied)
@@ -61,4 +61,3 @@ There is no backend: submitting composes an email to `profile.email` in the visi
 ## Checks
 
 - `npx tsc --noEmit` and `npx eslint .` must be clean.
-- Layout parity against the live template: `node ../tools/parity.mjs 1440 900` (and `390 844`) with the dev server on port 3200; the report lists every anchor's position and type differences.

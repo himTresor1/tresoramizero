@@ -4,10 +4,38 @@ import { profile } from "@/content/profile";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
+import { JsonLd, personSchema, websiteSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(profile.meta.siteUrl),
   title: { default: profile.meta.title, template: `%s · ${profile.fullName}` },
   description: profile.meta.description,
+  keywords: [...profile.meta.keywords],
+  authors: [{ name: profile.fullName, url: profile.meta.siteUrl }],
+  creator: profile.fullName,
+  publisher: profile.fullName,
+  category: "design",
+  applicationName: profile.meta.siteName,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: profile.meta.siteName,
+    title: profile.meta.title,
+    description: profile.meta.description,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: profile.meta.title,
+    description: profile.meta.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+  },
+  formatDetection: { email: false, address: false, telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -24,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" href="/fonts/InterDisplay-500-latin.woff2" as="font" type="font/woff2" crossOrigin="" />
         <link rel="preload" href="/fonts/InterDisplay-600-latin.woff2" as="font" type="font/woff2" crossOrigin="" />
         <link rel="preload" href="/fonts/InterDisplay-400-latin.woff2" as="font" type="font/woff2" crossOrigin="" />
+        <JsonLd data={[personSchema(), websiteSchema()]} />
       </head>
       <body>
         <a href="#main" className="t-nav sr-only z-[100] rounded-full bg-ink-deep px-5 py-2.5 text-on-dark focus:not-sr-only focus:fixed focus:top-3 focus:left-3">

@@ -13,7 +13,7 @@ import { Sim, BrandFigure, IsoFigure } from "./sims";
  * Case-study renderer. Skeleton follows the strong examples (Sai Tharun's Licious studies and
  * the usual Problem → Decisions → Outcome shape): hero meta block, eyebrow + headline + short
  * body pairs, numbered steps, stat tiles, before/after pairs, pull quotes, and figures rebuilt
- * from the product. Type and spacing are the template's; nothing is bold inside paragraphs.
+ * from the product. Type and spacing follow the site's type roles; nothing is bold inside paragraphs.
  */
 export function CaseStudy({ project, study }: { project: Project; study: CaseStudyT }) {
   return (

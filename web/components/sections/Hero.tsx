@@ -8,7 +8,7 @@ import { Marquee } from "@/components/ui/Marquee";
 import { HIDDEN } from "@/lib/motion";
 
 /**
- * Hero (docs/forensics.md §Layout, §Motion). Desktop 1440×900:
+ * Hero. Desktop 1440×900:
  * - photo covers the section (object-position 50% 100%), parallax translateY = 0.4 × scrollY
  * - the name runs as a marquee at 280px/220px, white + exclusion blend, row top 332px; the whole
  *   row also slides left 910px across the first 900px of scroll
@@ -16,7 +16,7 @@ import { HIDDEN } from "@/lib/motion";
  *   8px apart, bottom 48), both white + exclusion blend
  * Under 810px: 120px name, 32px/35px roles bottom-left, icon-only socials bottom-right.
  *
- * Load-in choreography, sampled on the live page (docs/forensics.md M3):
+ * Load-in choreography:
  *   photo   scale 2.4 → 1, opacity 0 → 1   starts ≈0.45s, lasts ≈1.05s, ease-in-out
  *   name    scale 0 → 1 around the centre   starts ≈1.0s,  lasts ≈0.6s
  *   socials opacity 0 → 1                   starts ≈1.5s,  lasts ≈1.5s

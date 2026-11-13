@@ -8,12 +8,12 @@ import { ScrollRevealText } from "@/components/motion/ScrollRevealText";
 import { HIDDEN, variantSpring } from "@/lib/motion";
 
 /**
- * "// Testimonials" (measured): rule + label row; container padding 96px 20px; text column at
+ * "// Testimonials": rule + label row; container padding 96px 20px; text column at
  * x 260, 920 wide, gap 48: counter "01/03" (DM Mono, accent + grey-light) absolutely at the top,
  * the quote (72px/74, 12 leading nbsp, scroll colour reveal 0.75 → 0.35 with an accent range),
  * then "// Name" (18px 600) and role (grey). Avatars: three 72px rings (4px pad; accent when
  * active, white otherwise) stacked at the right, 82px pitch; click switches the quote with the
- * template's variant spring.
+ * variant spring.
  */
 export function Testimonials() {
   const [active, setActive] = useState(0);
@@ -27,7 +27,7 @@ export function Testimonials() {
         <SectionLabel id="testimonials-label">Testimonials</SectionLabel>
       </div>
 
-      {/* under the desktop breakpoint the template lists every testimonial, no slider */}
+      {/* under the desktop breakpoint every testimonial is listed, no slider */}
       <div className="testimonials-stack">
         {testimonials.map((item, i) => (
           <figure key={i} className="testimonials-figure">

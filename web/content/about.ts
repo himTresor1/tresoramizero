@@ -3,7 +3,7 @@
 export type Experience = { title: string; org: string; period: string; url?: string; summary: string[] };
 
 export const about = {
-  /** Lead paragraph (72px, scroll colour reveal). *accent* range as on the template. */
+  /** Lead paragraph (72px, scroll colour reveal). *accent* range marked with asterisks. */
   lead:
     "I’m a product designer with a strong foundation in software engineering, turning ideas into *intuitive, impactful digital products.* I work closely with founders, engineers and institutions to create systems that scale — from research and design systems to launch-ready interfaces.",
   columns: [
@@ -12,7 +12,7 @@ export const about = {
   ],
   cta: "Let’s Talk",
   /**
-   * "// Experience" rows: role · organisation · period (the template's awards table). Hovering a
+   * "// Experience" rows: role · organisation · period. Hovering a
    * row turns it accent and shows a card with the summary (from the resume) and the site link.
    */
   experience: [

@@ -9,11 +9,11 @@ import { Marquee } from "@/components/ui/Marquee";
 import { getLenis } from "@/lib/scroll";
 
 /**
- * Fixed footer reveal (measured, docs/forensics.md §Page architecture): the footer sits in a
+ * Fixed footer reveal: the footer sits in a
  * fixed, full-viewport layer under `main` (z 1 vs 2) and a 100vh spacer after main lets the page
  * scroll past it. Across that last viewport (progress p):
  *   photo   scale 1.1 → 1, opacity 0 → 1 (linear in p)
- *   marquee "Reach Out -" slides left: translateX = min(0, 65 − 790p)  (fit to motion-probe)
+ *   marquee "Reach Out -" slides left: translateX = min(0, 65 − 790p)
  * Details block: lines at y 711/740/770, socials row y 855, back-to-top 44px circle at (1376, 20).
  * Text is white + exclusion blend, like the hero.
  */

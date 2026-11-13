@@ -6,13 +6,13 @@ import { media } from "@/content/media";
 import { HIDDEN } from "@/lib/motion";
 
 /**
- * Project page hero (measured on /projects/formula-vintage): a 1440×900 white container whose
+ * Project page hero: a 1440×900 white container whose
  * image is 1504×964 at (−32, −32) — a 32px overscan that the scroll parallax uses. Loads in with
- * the M1 reveal.
+ * the standard reveal.
  */
 export function ProjectHero({ project }: { project: Project }) {
   const cover = media.projects[project.cover];
-  // measured with wheel scrolling: the cover eases to scale 0.985 over the first ~600px of scroll
+  // the cover eases to scale 0.985 over the first ~600px of scroll
   const { scrollY } = useScroll();
   const scrollScale = useTransform(scrollY, [0, 600], [1, 0.985], { clamp: true });
   return (

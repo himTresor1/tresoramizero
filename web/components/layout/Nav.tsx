@@ -13,14 +13,14 @@ export const navLinks = [
 ] as const;
 
 /**
- * Template nav (measured, docs/forensics.md): desktop 92px tall, four items spread across the
+ * Nav: desktop 92px tall, four items spread across the
  * 1400px content width, 18px Inter Display 400, white with `mix-blend-mode: exclusion` so it reads
  * dark over light sections and light over dark ones. Under 1200px: 72px tall, 16px wordmark and a
  * 40×40 two-line toggle; the text is plain ink (no blend).
  */
 export function Nav() {
   const [open, setOpen] = useState(false);
-  // measured: the home nav is white + exclusion (it sits on the photo); inner pages use plain ink
+  // the home nav is white + exclusion (it sits on the photo); inner pages use plain ink
   const home = usePathname() === "/";
 
   useEffect(() => {

@@ -7,6 +7,9 @@ import { ProjectOverview } from "@/components/project/ProjectOverview";
 import { ProjectGallery } from "@/components/project/ProjectGallery";
 import { MoreProjects } from "@/components/project/MoreProjects";
 import { CaseStudy } from "@/components/case/CaseStudy";
+import { JsonLd, caseStudySchema } from "@/lib/seo";
+import { media } from "@/content/media";
+import { profile } from "@/content/profile";
 
 export function generateStaticParams() {
   return publishedProjects.map((p) => ({ slug: p.slug }));
@@ -16,7 +19,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const p = projects.find((x) => x.slug === slug);
   if (!p) return {};
-  return { title: p.name, description: p.summary };
+  const title = `${p.name} — Product Design Case Study`;
+  const description = `${p.summary} A case study by ${profile.fullName}.`;
+  const cover = media.projects[p.cover];
+  return {
+    title,
+    description,
+    alternates: { canonical: `/projects/${p.slug}` },
+    openGraph: { title: `${p.name} — case study by ${profile.fullName}`, description, url: `/projects/${p.slug}`, type: "article", images: [{ url: cover.src, width: cover.width, height: cover.height, alt: cover.alt }] },
+    twitter: { card: "summary_large_image", title, description, images: [cover.src] },
+  };
 }
 
 // `params` is read inside a Suspense boundary so navigation to a project page stays instant
@@ -37,6 +49,7 @@ async function ProjectContent({ params }: { params: Promise<{ slug: string }> })
 
   return (
     <>
+      <JsonLd data={caseStudySchema(project)} />
       <ProjectHero project={project} />
       <div className="project-page-body">
         {project.caseStudy ? (

@@ -1,7 +1,7 @@
 import { trustedBy } from "@/content/testimonials";
 import { Marquee } from "@/components/ui/Marquee";
 
-/** 96px logo ticker (measured): 60px items, 32px gap, white strip. Text wordmarks until logos arrive. */
+/** 96px logo ticker: 60px items, 32px gap, white strip. Text wordmarks until logos arrive. */
 export function Trust() {
   return (
     <section className="trust bg-page" aria-label="Organisations I have worked with">

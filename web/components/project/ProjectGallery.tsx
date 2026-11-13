@@ -2,9 +2,8 @@ import type { Project } from "@/content/projects";
 import { media } from "@/content/media";
 
 /**
- * Gallery (measured): one 1440×900 frame per image, 20px apart; each image is 1100px tall and
- * sits 200px above its frame (a fixed offset — the live site's gallery images do not move with
- * scroll, verified with real wheel scrolling).
+ * Gallery: one 1440×900 frame per image, 20px apart; each image is 1100px tall and
+ * sits 200px above its frame (a fixed offset — the gallery images do not move with scroll).
  */
 export function ProjectGallery({ project }: { project: Project }) {
   return (

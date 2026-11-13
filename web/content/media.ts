@@ -11,7 +11,7 @@ export const media = {
     width: 1709,
     height: 920,
   } satisfies Image,
-  /** The template serves a separate portrait crop under 810px; the same photo is used, cropped by CSS. */
+  /** Under 810px the same photo is used, cropped by CSS; a separate portrait crop can be swapped in here. */
   heroMobile: {
     src: "/media/hero.webp",
     alt: "Portrait of Tresor Amizero",

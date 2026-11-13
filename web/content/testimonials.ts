@@ -1,7 +1,7 @@
 /**
- * Real quotes only ship (PLAN.md Q1). The entries below are PLACEHOLDERS so the section can be
+ * Real quotes only ship. The entries below are PLACEHOLDERS so the section can be
  * built and reviewed; they are flagged and must be replaced or the section hidden before launch.
- * Shape mirrors the template: quote (with *accent* range), name, role at company, avatar.
+ * Shape: quote (with *accent* range), name, role at company, avatar.
  */
 export type Testimonial = { quote: string; name: string; role: string; avatar: string; placeholder?: boolean };
 

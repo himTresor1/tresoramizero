@@ -4,10 +4,16 @@ import { ContactForm } from "@/components/contact/ContactForm";
 import { Icon, socialIcon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/motion/Reveal";
 
-export const metadata: Metadata = { title: "Contact", description: `Get in touch with ${profile.fullName}.` };
+const contactDescription = `Get in touch with ${profile.fullName}, product designer in ${profile.location}, for product design roles and freelance work.`;
+export const metadata: Metadata = {
+  title: `Contact ${profile.fullName}`,
+  description: contactDescription,
+  alternates: { canonical: "/contact" },
+  openGraph: { title: `Contact ${profile.fullName}`, description: contactDescription, url: "/contact" },
+};
 
 /**
- * /contact (measured): one section (padding 180 20 40, two columns 76px apart): "Reach Out"
+ * /contact: one section (padding 180 20 40, two columns 76px apart): "Reach Out"
  * h1 120/108 in a 462px column; the form column at x 558 (862 wide, padding-top 200, gap 40):
  * h2 40px/40, four underlined fields (16px Inter, 63px pitch), a 189×60 ink pill, then the
  * details block (padding-top 56, gap 60): three lines and the socials row.

@@ -7,11 +7,11 @@ import { Reveal } from "@/components/motion/Reveal";
 import { StickyNumber } from "./StickyNumber";
 
 /**
- * "// Services" (measured, docs/forensics.md). Desktop: rule + 49px label row, 40px, then the
+ * "// Services". Desktop: rule + 49px label row, 40px, then the
  * "content" row (padding 20, gap 32): the outlined number (462×342, DM Mono 300 252px, sticky top
  * 96px) and the card column (x 514, 906 wide, padding-top 160, gap 240 between groups). Each
  * group: h2 72px + description (16px inset, 640 max), then 80px, then the rows (58px, padding
- * 0 24px, h4 + DM Mono index, 1px rules). Groups enter at scale 0.9 / opacity 0 (M1 timing).
+ * 0 24px, h4 + DM Mono index, 1px rules). Groups enter at scale 0.9 / opacity 0 (reveal timing).
  * The number reads the group whose top has passed the number's own top (M6).
  */
 export function Services() {

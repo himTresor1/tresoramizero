@@ -5,7 +5,7 @@ import { variantSpring } from "@/lib/motion";
 
 /**
  * The outlined DM Mono counter beside the service groups (and the About facts): sticky at 96px,
- * flips per block with the template's variant spring (0.4s, bounce 0.2, read from its React tree).
+ * flips per block with the variant spring (0.4s, bounce 0.2).
  * `labels` overrides the zero-padded index (the facts show their own figures).
  */
 export function StickyNumber({ index, total, labels }: { index: number; total: number; labels?: readonly string[] }) {

@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 /**
- * The template's "See my Work" pill (measured): 184×65, padding 20px 40px, radius 56, 1px rule,
- * grey label. Hover (M8): an accent circle grows from the bottom centre to ~285px and the label
+ * The "See my Work" pill: 184×65, padding 20px 40px, radius 56, 1px rule,
+ * grey label. Hover: an accent circle grows from the bottom centre to ~285px and the label
  * slides up 35px to reveal a white copy. Styles in globals.css (.pill).
  */
 export function PillButton({ href, children, className = "", external = false }: { href: string; children: ReactNode; className?: string; external?: boolean }) {

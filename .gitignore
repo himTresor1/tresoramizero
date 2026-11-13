@@ -1,9 +1,4 @@
-reference/**/assets/
-reference/**/screenshots/
-reference/*.log
 web/node_modules/
 web/.next/
 .DS_Store
 web/.env*.local
-reference/
-tools/node_modules

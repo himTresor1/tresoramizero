@@ -5,7 +5,7 @@ import { PillButton } from "@/components/ui/PillButton";
 import { Reveal } from "@/components/motion/Reveal";
 
 /**
- * "// Intro" (measured, docs/forensics.md). Desktop: 1px rule, 49px label row, container padding
+ * "// Intro". Desktop: 1px rule, 49px label row, container padding
  * 120px 20px, lead paragraph 1200px wide centred (72px/74px, −0.04em, first line indented with
  * 21 nbsp), then a 60px gap and a 2-column bottom row (684 | 684, gap 32) whose right column holds
  * the 530px body paragraph and, 60px below, the pill button. 120px bottom padding.
@@ -19,8 +19,7 @@ export function Intro() {
         <SectionLabel id="intro-label">Intro</SectionLabel>
       </div>
       <div className="intro-body">
-        {/* the template's component props (read from its React tree): useScrollColor, startOffset
-            "start 0.75", endOffset "start 0.35", 21 leading nbsp on desktop, 9 under 1200px */}
+        {/* scroll colour reveal: start offset 0.75, end offset 0.35, 21 leading nbsp on desktop, 9 under 1200px */}
         <ScrollRevealText text={profile.intro.lead} indent={21} indentSmall={9} className="intro-lead t-lead" start={0.75} end={0.35} />
         <div className="intro-bottom">
           <div className="intro-spacer" aria-hidden="true" />

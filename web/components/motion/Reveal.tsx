@@ -4,9 +4,9 @@ import { motion, type HTMLMotionProps } from "motion/react";
 import { HIDDEN, reveal } from "@/lib/motion";
 
 type Props = HTMLMotionProps<"div"> & {
-  /** Start scale (services groups and project cards start at 0.9, measured). */
+  /** Start scale (services groups and project cards start at 0.9). */
   fromScale?: number;
-  /** Start y offset in px, where the capture shows one. */
+  /** Start y offset in px. */
   fromY?: number;
   delay?: number;
   /** Portion of the element that must be in view before it reveals. */
@@ -16,7 +16,7 @@ type Props = HTMLMotionProps<"div"> & {
 };
 
 /**
- * Entrance reveal with the template's measured timing (M1: 650ms, no-bounce spring) and its
+ * Entrance reveal with the site's standard timing (650ms, no-bounce spring) and an
  * opacity 0.001 start. Uses whileInView so it also works under Lenis.
  */
 export function Reveal({ fromScale = 1, fromY = 0, delay = 0, amount = 0.2, once = true, as = "div", style, children, ...rest }: Props) {

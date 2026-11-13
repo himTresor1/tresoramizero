@@ -7,8 +7,8 @@ import { profile } from "@/content/profile";
  * Delivery: the form posts to Web3Forms (https://web3forms.com), which emails every submission to
  * the address the access key was issued for. The key is public by design and lives in
  * NEXT_PUBLIC_WEB3FORMS_KEY (.env.local locally, Environment Variables on Vercel). Without a key
- * the form falls back to composing an email in the visitor's mail app. Same fields and look as the
- * template: underlined inputs (16px Inter, 1px rule), a textarea, and the ink "Send Message" pill.
+ * the form falls back to composing an email in the visitor's mail app. Fields and look:
+ * underlined inputs (16px Inter, 1px rule), a textarea, and the ink "Send Message" pill.
  */
 const KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 type Status = "idle" | "sending" | "sent" | "error";
