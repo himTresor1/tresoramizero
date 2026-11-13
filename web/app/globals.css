@@ -222,7 +222,7 @@
   /* each slot sticks at the top of the stack; later slots scroll over the earlier ones */
   .project-slot { position: sticky; top: 0; height: 100vh; min-height: 820px; }
   .project-card { height: 100%; padding: 60px 20px 20px; transform-origin: 50% 50%; will-change: transform, opacity; }
-  .project-card-inner { display: flex; gap: 10px; height: 100%; padding: 12px; border-radius: 20px; background: var(--card); }
+  .project-card-inner { display: flex; gap: 10px; height: 100%; padding: 12px; border-radius: 20px; background: var(--card); box-shadow: inset 0 0 0 1px var(--grey-light), 0 24px 48px -32px rgba(18, 17, 17, 0.25); }
   .project-image { position: relative; display: block; flex: 1 1 0; overflow: hidden; border-radius: 16px; cursor: none; }
   .project-image img { width: 100%; height: 100%; object-fit: cover; }
   .project-view { position: absolute; left: 0; top: 0; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: var(--accent); color: #fff; font-family: var(--font-display); font-size: 18px; line-height: 84px; text-align: center; pointer-events: none; transform-origin: 50% 50%; }

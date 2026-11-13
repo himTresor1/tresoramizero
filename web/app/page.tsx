@@ -9,8 +9,8 @@ export default function Home() {
     <>
       <Hero />
       <Intro />
-      <Services />
       <Projects />
+      <Services />
       {/* Testimonials are hidden until real quotes exist (PLAN.md Q1); see content/testimonials.ts */}
       <Trust />
     </>

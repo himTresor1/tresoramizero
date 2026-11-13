@@ -6,7 +6,8 @@ import { SectionLabel } from "@/components/ui/SectionLabel";
 import { ProjectCard } from "./ProjectCard";
 
 /**
- * "// Projects" (measured): section bg ink-deep, sticky label row, 60px top padding, one 900px
+ * "// Projects" (measured): the template paints this section ink-deep; here it stays on the page
+ * colour like its neighbours (Tresor's call), with a hairline on the cards. Sticky label row, 60px top padding, one 900px
  * sticky slot per card (top 0) with 200px between slots, 120px bottom padding. Each card is a
  * white 1400×820 panel (padding 12, radius 20): image 881×796 (radius 16) + text column (485,
  * padding 32). As the next card slides over, the card behind scales 1 → 0.9 and fades 1 → 0 across
@@ -15,7 +16,8 @@ import { ProjectCard } from "./ProjectCard";
 export function Projects() {
   const ref = useRef<HTMLDivElement>(null);
   return (
-    <section id="projects" className="projects relative bg-page-deep" aria-labelledby="projects-label">
+    <section id="projects" className="projects relative bg-page" aria-labelledby="projects-label">
+      <div className="h-px w-full bg-grey-light" aria-hidden="true" />
       <div className="projects-head">
         <SectionLabel id="projects-label">Projects</SectionLabel>
       </div>
