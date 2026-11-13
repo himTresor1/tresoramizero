@@ -2,3 +2,5 @@ web/node_modules/
 web/.next/
 .DS_Store
 web/.env*.local
+config.bat
+node_modules
