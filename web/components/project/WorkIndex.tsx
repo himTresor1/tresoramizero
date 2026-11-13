@@ -23,7 +23,13 @@ export function WorkIndex({ projects }: { projects: Project[] }) {
     const measure = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const cardW = vw >= 1200 ? 1280 : vw;
+      if (vw < 1200) {
+        // under the desktop breakpoint the cards stack in flow (globals.css): no sticky, no travel
+        setTravel(0);
+        setHeight(undefined);
+        return;
+      }
+      const cardW = 1280;
       const track = cardW * projects.length;
       const t = Math.max(0, track - vw);
       setTravel(t);

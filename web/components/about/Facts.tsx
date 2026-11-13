@@ -59,6 +59,9 @@ export function Facts() {
                 refs.current[i] = el;
               }}
             >
+              <span className="t-number facts-number-inline" aria-hidden="true">
+                {f.number}
+              </span>
               <h2 className="t-h2">{f.title}</h2>
               <p className="t-body facts-text">{f.text}</p>
             </Reveal>

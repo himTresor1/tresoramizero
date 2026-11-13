@@ -436,6 +436,7 @@
   .facts-block { display: flex; flex-direction: column; gap: 64px; padding: 160px 0; border-bottom: 1px solid var(--grey-light); transform-origin: 50% 50%; }
   .facts-text { max-width: 420px; }
   .facts-spacer { height: 306px; }
+  .facts-number-inline { display: none; }
   @media (max-width: 1199px) {
     .about-hero { gap: 40px; padding: 160px 16px 80px; }
     .about-portrait { position: static; margin-bottom: 16px; }
@@ -450,7 +451,8 @@
     .facts-content { flex-direction: column; gap: 0; }
     .facts-number-col { display: none; }
     .facts-cards { padding: 0 16px; }
-    .facts-block { gap: 24px; padding: 48px 0; }
+    .facts-block { gap: 20px; padding: 48px 0; }
+    .facts-number-inline { display: block; font-size: 96px; line-height: 0.9; margin-bottom: 8px; }
     .facts-block .t-h2 { font-size: 32px; line-height: 35.2px; letter-spacing: -0.03em; }
     .facts-spacer { height: 40px; }
   }
